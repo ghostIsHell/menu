@@ -21,15 +21,22 @@ def salva_su_disco(pasti):
 
 def genera_nuova_settimana():
     giorni_l = ['Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato', 'Domenica']
-    # Proteine bilanciate
+    # Pool Ministero
     prots = (['Legumi'] * 4 + ['Pesce'] * 3 + ['Carne Bianca'] * 3 + ['Uova'] * 2 + ['Formaggio'] * 1 + ['Carne Rossa'] * 1)
-    # Carboidrati divisi (Pasta/Riso solo a pranzo)
     c_p = ['Pasta Integrale']*3 + ['Riso', 'Farro', 'Gnocchi', 'Cous Cous']
     c_c = ['Pane Integrale']*4 + ['Patate']*3
-    # 14 verdure diverse
     v = random.sample(OPZIONI_VERD, 14)
     
-    random.shuffle(prots); random.shuffle(c_p); random.shuffle(c_c); random.shuffle(v)
+    # Rimescolamento con controllo anti-ripetizione consecutiva
+    for _ in range(100):
+        random.shuffle(prots)
+        valido = True
+        for i in range(len(prots)-1):
+            if prots[i] == prots[i+1]: # Se due pasti di fila hanno la stessa proteina
+                valido = False; break
+        if valido: break
+
+    random.shuffle(c_p); random.shuffle(c_c); random.shuffle(v)
     
     nuovi = []
     for i in range(14):
@@ -42,52 +49,55 @@ def genera_nuova_settimana():
 
 # --- AZIONI PULSANTI ---
 def action_reset():
-    # 1. Elimina file fisico
     if os.path.exists(FILE_SALVATAGGIO):
         os.remove(FILE_SALVATAGGIO)
-    # 2. Svuota sessione
-    for key in list(st.session_state.keys()):
-        del st.session_state[key]
-    # 3. Forza rigenerazione immediata
+    st.session_state.clear()
+    # Generiamo subito i nuovi dati prima del rerun
     st.session_state.pasti = genera_nuova_settimana()
     salva_su_disco(st.session_state.pasti)
     st.rerun()
 
 def action_rimescola():
-    liberi_idx = [i for i, p in enumerate(st.session_state.pasti) if not p.get('locked', False)]
-    if not liberi_idx: return
+    # Prendi indici liberi (incluso il Lunedì, idx 0)
+    lib_idx = [i for i, p in enumerate(st.session_state.pasti) if not p.get('locked', False)]
+    if len(lib_idx) < 2: return
     
-    # Rimescola Proteine e Verdure
-    for attr in ['prot', 'verd']:
-        vals = [st.session_state.pasti[i][attr] for i in liberi_idx]
-        random.shuffle(vals)
-        for idx_val, i in enumerate(liberi_idx):
-            st.session_state.pasti[i][attr] = vals[idx_val]
+    # Rimescolamento Proteine e Verdure con logica anti-ripetizione
+    for _ in range(100):
+        # Copia temporanea delle proteine attuali nei posti liberi
+        temp_prots = [st.session_state.pasti[i]['prot'] for i in lib_idx]
+        random.shuffle(temp_prots)
+        
+        # Test validità
+        valido = True
+        test_pasti = [p['prot'] for p in st.session_state.pasti]
+        for enum_i, original_idx in enumerate(lib_idx):
+            test_pasti[original_idx] = temp_prots[enum_i]
+        
+        for i in range(len(test_pasti)-1):
+            if test_pasti[i] == test_pasti[i+1]:
+                valido = False; break
+        
+        if valido:
+            for enum_i, original_idx in enumerate(lib_idx):
+                st.session_state.pasti[original_idx]['prot'] = temp_prots[enum_i]
+            break
+
+    # Rimescola Verdure (liberamente)
+    temp_verd = [st.session_state.pasti[i]['verd'] for i in lib_idx]
+    random.shuffle(temp_verd)
+    for enum_i, original_idx in enumerate(lib_idx):
+        st.session_state.pasti[original_idx]['verd'] = temp_verd[enum_i]
             
-    # Rimescola Carbo bilanciati
-    lib_pranzo = [i for i in liberi_idx if i % 2 == 0]
-    lib_cena = [i for i in liberi_idx if i % 2 != 0]
-    for gruppo in [lib_pranzo, lib_cena]:
-        if gruppo:
-            c_vals = [st.session_state.pasti[i]['carbo'] for i in gruppo]
-            random.shuffle(c_vals)
-            for idx_val, i in enumerate(gruppo):
-                st.session_state.pasti[i]['carbo'] = c_vals[idx_val]
-    
     salva_su_disco(st.session_state.pasti)
     st.rerun()
 
 # --- INIZIALIZZAZIONE ---
 if 'pasti' not in st.session_state:
-    dati_disco = carica_da_disco() if 'carica_da_disco' in globals() else None
     if os.path.exists(FILE_SALVATAGGIO):
-        try:
-            df = pd.read_csv(FILE_SALVATAGGIO)
-            df['locked'] = df['locked'].astype(bool)
-            st.session_state.pasti = df.to_dict('records')
-        except:
-            st.session_state.pasti = genera_nuova_settimana()
-            salva_su_disco(st.session_state.pasti)
+        df = pd.read_csv(FILE_SALVATAGGIO)
+        df['locked'] = df['locked'].astype(bool)
+        st.session_state.pasti = df.to_dict('records')
     else:
         st.session_state.pasti = genera_nuova_settimana()
         salva_su_disco(st.session_state.pasti)
@@ -105,7 +115,6 @@ for i in range(0, 14, 2):
         for j in range(2):
             idx = i + j
             pasto = st.session_state.pasti[idx]
-            
             is_sel = (st.session_state.scambio_id == idx)
             border = "3px solid #FF4B4B" if is_sel else "1px solid #eee"
             st.markdown(f'<div style="border-left: {border}; padding-left: 10px; margin-bottom: 5px;"><small>{"☀️" if j==0 else "🌙"} {pasto["tipo"]}</small></div>', unsafe_allow_html=True)
@@ -133,14 +142,14 @@ for i in range(0, 14, 2):
                     st.session_state.scambio_id = None
                 st.rerun()
             
-            st.session_state.pasti[idx]['locked'] = ca2.checkbox("Blocca", value=pasto.get('locked', False), key=f"l_{idx}")
+            st.session_state.pasti[idx]['locked'] = ca2.checkbox("Blocca", value=pasto.get('locked', False), key=f"l_{idx}", on_change=salva_su_disco)
 
-# --- BOTTONI E STATISTICHE ---
 st.divider()
 c1, c2 = st.columns(2)
-c1.button("🎲 Rimescola Liberi", use_container_width=True, on_click=action_rimescola)
+c1.button("🎲 Rimescola Bilanciato", use_container_width=True, on_click=action_rimescola)
 c2.button("🗑️ Reset / Nuova Settimana", use_container_width=True, on_click=action_reset)
 
+# Statistiche
 all_p = [p['prot'] for p in st.session_state.pasti]
 cols = st.columns(4)
 for i, (name, goal) in enumerate([("Pesce", 3), ("Legumi", 4), ("Carne Bianca", 3), ("Uova", 2)]):
