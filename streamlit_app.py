@@ -21,12 +21,15 @@ def salva_su_disco():
 
 def carica_da_disco():
     if os.path.exists(FILE_SALVATAGGIO):
-        df = pd.read_csv(FILE_SALVATAGGIO)
-        df['locked'] = df['locked'].astype(bool)
-        return df.to_dict('records')
+        try:
+            df = pd.read_csv(FILE_SALVATAGGIO)
+            df['locked'] = df['locked'].astype(bool)
+            return df.to_dict('records')
+        except:
+            return None
     return None
 
-# --- INIZIALIZZAZIONE STATI (CORRETTA) ---
+# --- INIZIALIZZAZIONE STATI ---
 if 'scambio_id' not in st.session_state:
     st.session_state.scambio_id = None
 
@@ -57,7 +60,16 @@ def esegui_scambio(id_cliccato):
             salva_su_disco()
         st.session_state.scambio_id = None
 
-st.title("🥗 Menù Salute Bilanciato")
+# --- FUNZIONE RESET DEFINITIVA ---
+def reset_totale_sicuro():
+    if os.path.exists(FILE_SALVATAGGIO):
+        os.remove(FILE_SALVATAGGIO)
+    # Pulizia profonda della sessione
+    for key in list(st.session_state.keys()):
+        del st.session_state[key]
+    st.rerun()
+
+st.title("🥗 Il Mio Menù Benessere")
 
 # --- INTERFACCIA ---
 for i in range(0, 14, 2):
@@ -72,9 +84,14 @@ for i in range(0, 14, 2):
                 <small>{'☀️' if j==0 else '🌙'} {pasto['tipo']}</small></div>""", unsafe_allow_html=True)
             
             c1, c2, c3 = st.columns(3)
-            new_c = c1.selectbox("Cereale", OPZIONI_CARBO, index=OPZIONI_CARBO.index(pasto['carbo']) if pasto['carbo'] in OPZIONI_CARBO else 0, key=f"c_{idx}")
-            new_p = c2.selectbox("Proteina", OPZIONI_PROT, index=OPZIONI_PROT.index(pasto['prot']) if pasto['prot'] in OPZIONI_PROT else 0, key=f"p_{idx}")
-            new_v = c3.selectbox("Verdura", OPZIONI_VERD, index=OPZIONI_VERD.index(pasto['verd']) if pasto['verd'] in OPZIONI_VERD else 0, key=f"v_{idx}")
+            # Caricamento dinamico indici per evitare errori se le liste opzioni cambiano
+            idx_c = OPZIONI_CARBO.index(pasto['carbo']) if pasto['carbo'] in OPZIONI_CARBO else 0
+            idx_p = OPZIONI_PROT.index(pasto['prot']) if pasto['prot'] in OPZIONI_PROT else 0
+            idx_v = OPZIONI_VERD.index(pasto['verd']) if pasto['verd'] in OPZIONI_VERD else 0
+
+            new_c = c1.selectbox("Cereale", OPZIONI_CARBO, index=idx_c, key=f"c_{idx}")
+            new_p = c2.selectbox("Proteina", OPZIONI_PROT, index=idx_p, key=f"p_{idx}")
+            new_v = c3.selectbox("Verdura", OPZIONI_VERD, index=idx_v, key=f"v_{idx}")
             
             if new_c != pasto['carbo'] or new_p != pasto['prot'] or new_v != pasto['verd']:
                 st.session_state.pasti[idx].update({"carbo": new_c, "prot": new_p, "verd": new_v})
@@ -92,11 +109,8 @@ target = {"Pesce": 3, "Legumi": 4, "Carne Bianca": 3, "Uova": 2}
 cols = st.columns(4)
 for i, (p_nome, p_count) in enumerate(target.items()):
     attuale = all_p.count(p_nome)
-    # Calcolo delta rispetto all'obiettivo
     delta_val = attuale - p_count
     cols[i].metric(p_nome, f"{attuale}/{p_count}", delta=delta_val, delta_color="normal" if delta_val == 0 else "inverse")
 
-if st.button("🔄 Reset Totale"):
-    if os.path.exists(FILE_SALVATAGGIO): os.remove(FILE_SALVATAGGIO)
-    st.session_state.clear()
-    st.rerun()
+# Pulsante Reset con la nuova funzione sicura
+st.button("🔄 Reset Totale / Nuova Settimana", use_container_width=True, on_click=reset_totale_sicuro)
