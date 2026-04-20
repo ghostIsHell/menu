@@ -39,7 +39,7 @@ if st.session_state.scambio_id is not None:
         st.session_state.scambio_id = None
         st.rerun()
 
-# --- INTERFACCIA CON GERARCHIA VISIVA ---
+# --- INTERFACCIA ---
 for i in range(0, 14, 2):
     giorno_nome = st.session_state.pasti[i]['giorno']
     with st.expander(f"📅 {giorno_nome}", expanded=True):
@@ -52,12 +52,12 @@ for i in range(0, 14, 2):
             col_testo, col_sposta, col_lock = st.columns([0.65, 0.18, 0.17])
             
             with col_testo:
-                # Gerarchia visiva: Carboidrato grande, resto piccolo
+                # Gerarchia visiva: Stesso colore, solo pesi diversi
                 st.markdown(f"""
-                <div style="line-height: 1.2;">
-                    <span style="font-size: 0.85em; color: #888;">{icona_tipo} {pasto['tipo'].upper()}</span><br>
-                    <span style="font-size: 1.25em; font-weight: bold; color: #1E88E5;">{pasto['carbo']}</span> 
-                    <span style="font-size: 0.95em; color: #555;">con {emoji} {pasto['prot']} e {pasto['verd']}</span>
+                <div style="line-height: 1.2; color: #31333F;">
+                    <span style="font-size: 0.85em; opacity: 0.6;">{icona_tipo} {pasto['tipo'].upper()}</span><br>
+                    <span style="font-size: 1.15em; font-weight: bold;">{pasto['carbo']}</span> 
+                    <span style="font-size: 1em;">con {emoji} {pasto['prot']} e {pasto['verd']}</span>
                 </div>
                 """, unsafe_allow_html=True)
             
@@ -75,22 +75,37 @@ for i in range(0, 14, 2):
             with col_lock:
                 st.session_state.pasti[idx]['locked'] = st.checkbox("Blocca", value=pasto['locked'], key=f"l_{idx}")
 
-# --- CONTROLLO NUTRIZIONALE E BOTTONI ---
+# --- CONTROLLO NUTRIZIONALE ---
 st.divider()
 all_prots = [p['prot'] for p in st.session_state.pasti]
+st.subheader("📊 Bilancio Settimanale")
 cols_m = st.columns(4)
-obiettivi = [("Pesce", 3), ("Legumi", 4), ("Bianca", 3), ("Uova", 2)]
+obiettivi = [("Pesce", 3), ("Legumi", 4), ("Carne Bianca", 3), ("Uova", 2)]
 for i, (nome, target) in enumerate(obiettivi):
-    attuale = all_prots.count(nome if nome != "Bianca" else "Carne Bianca")
+    attuale = all_prots.count(nome)
     cols_m[i].metric(nome, f"{attuale}/{target}")
 
-c_b1, c_b2 = st.columns(2)
-c_b1.button("🎲 Rimescola Liberi", on_click=lambda: rimescola(), use_container_width=True)
-c_b2.button("🔄 Nuova Base / Reset", on_click=lambda: st.session_state.clear(), use_container_width=True)
+# --- LISTA DELLA SPESA ---
+with st.expander("🛒 Lista della Spesa (x2 persone)"):
+    st.write("Proteine:")
+    st.write(f"- 🐟 Pesce: {all_prots.count('Pesce')*300}g")
+    st.write(f"- 🌿 Legumi: {all_prots.count('Legumi')*300}g (cotti)")
+    st.write(f"- 🥩 Carne Bianca: {all_prots.count('Carne Bianca')*250}g")
+    st.write(f"- 🥚 Uova: {all_prots.count('Uova')*4} unità")
+    st.write(f"- 🧀 Formaggio: {all_prots.count('Formaggio')*200}g")
+    st.write(f"- 🥩 Carne Rossa: {all_prots.count('Carne Rossa')*250}g")
 
-def rimescola():
+# --- BOTTONI FINALI ---
+st.divider()
+c_b1, c_b2 = st.columns(2)
+if c_b1.button("🎲 Rimescola Liberi", use_container_width=True):
     lib_idx = [k for k, p in enumerate(st.session_state.pasti) if not p['locked']]
     for attr in ['prot', 'verd']:
         vals = [st.session_state.pasti[k][attr] for k in lib_idx]
         random.shuffle(vals)
         for idx_val, k in enumerate(lib_idx): st.session_state.pasti[k][attr] = vals[idx_val]
+    st.rerun()
+
+if c_b2.button("🔄 Nuova Base / Reset", use_container_width=True):
+    st.session_state.clear()
+    st.rerun()
