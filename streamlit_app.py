@@ -15,6 +15,7 @@ OPZIONI_VERD = ['Zucchine', 'Asparagi', 'Spinaci', 'Bieta', 'Finocchi', 'Carote'
 giorni_it = {0: "Lunedì", 1: "Martedì", 2: "Mercoledì", 3: "Giovedì", 4: "Venerdì", 5: "Sabato", 6: "Domenica"}
 oggi = giorni_it[datetime.now().weekday()]
 
+# --- FUNZIONI PERSISTENZA ---
 def salva_su_disco():
     pd.DataFrame(st.session_state.pasti).to_csv(FILE_SALVATAGGIO, index=False)
 
@@ -25,23 +26,14 @@ def carica_da_disco():
         return df.to_dict('records')
     return None
 
-# --- LOGICA DI SCAMBIO INTELLIGENTE (Mantiene il bilancio) ---
-def esegui_scambio(id_cliccato):
-    if st.session_state.scambio_id is None:
-        st.session_state.scambio_id = id_cliccato
-    else:
-        id1, id2 = st.session_state.scambio_id, id_cliccato
-        if id1 != id2:
-            # Scambio incrociato: quello che tolgo da qui va lì e viceversa
-            for attr in ['prot', 'carbo', 'verd']:
-                st.session_state.pasti[id1][attr], st.session_state.pasti[id2][attr] = \
-                st.session_state.pasti[id2][attr], st.session_state.pasti[id1][attr]
-            salva_su_disco()
-        st.session_state.scambio_id = None
+# --- INIZIALIZZAZIONE STATI (CORRETTA) ---
+if 'scambio_id' not in st.session_state:
+    st.session_state.scambio_id = None
 
 if 'pasti' not in st.session_state:
     dati = carica_da_disco()
-    if dati: st.session_state.pasti = dati
+    if dati: 
+        st.session_state.pasti = dati
     else:
         giorni_l = ['Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato', 'Domenica']
         prots = (['Legumi'] * 4 + ['Pesce'] * 3 + ['Carne Bianca'] * 3 + ['Uova'] * 2 + ['Formaggio'] * 1 + ['Carne Rossa'] * 1)
@@ -51,6 +43,19 @@ if 'pasti' not in st.session_state:
         random.shuffle(prots); random.shuffle(c_p); random.shuffle(c_c)
         st.session_state.pasti = [{"id": i, "giorno": giorni_l[i//2], "tipo": "Pranzo" if i%2==0 else "Cena", "prot": prots[i], "carbo": c_p[i//2] if i%2==0 else c_c[i//2], "verd": v[i], "locked": False} for i in range(14)]
         salva_su_disco()
+
+# --- LOGICA SCAMBIO ---
+def esegui_scambio(id_cliccato):
+    if st.session_state.scambio_id is None:
+        st.session_state.scambio_id = id_cliccato
+    else:
+        id1, id2 = st.session_state.scambio_id, id_cliccato
+        if id1 != id2:
+            for attr in ['prot', 'carbo', 'verd']:
+                st.session_state.pasti[id1][attr], st.session_state.pasti[id2][attr] = \
+                st.session_state.pasti[id2][attr], st.session_state.pasti[id1][attr]
+            salva_su_disco()
+        st.session_state.scambio_id = None
 
 st.title("🥗 Menù Salute Bilanciato")
 
@@ -80,16 +85,16 @@ for i in range(0, 14, 2):
             ca1.button("SPOSTA / SCAMBIA", key=f"m_{idx}", on_click=esegui_scambio, args=(idx,), use_container_width=True)
             st.session_state.pasti[idx]['locked'] = ca2.checkbox("Blocca", value=pasto['locked'], key=f"l_{idx}", on_change=salva_su_disco)
 
-# --- CONTROLLO NUTRIZIONALE IN TEMPO REALE ---
+# --- CONTROLLO NUTRIZIONALE ---
 st.divider()
-st.subheader("📊 Controllo Frequenze Settimanali")
 all_p = [p['prot'] for p in st.session_state.pasti]
 target = {"Pesce": 3, "Legumi": 4, "Carne Bianca": 3, "Uova": 2}
 cols = st.columns(4)
 for i, (p_nome, p_count) in enumerate(target.items()):
     attuale = all_p.count(p_nome)
-    colore = "normal" if attuale == p_count else "inverse"
-    cols[i].metric(p_nome, f"{attuale}/{p_count}", delta=attuale-p_count, delta_color=colore)
+    # Calcolo delta rispetto all'obiettivo
+    delta_val = attuale - p_count
+    cols[i].metric(p_nome, f"{attuale}/{p_count}", delta=delta_val, delta_color="normal" if delta_val == 0 else "inverse")
 
 if st.button("🔄 Reset Totale"):
     if os.path.exists(FILE_SALVATAGGIO): os.remove(FILE_SALVATAGGIO)
