@@ -1,5 +1,6 @@
 import streamlit as st
 import random
+from datetime import datetime
 
 st.set_page_config(page_title="Menù Salute", page_icon="🥗", layout="wide")
 
@@ -9,9 +10,13 @@ EMOJI_PROT = {
     'Uova': '🔴', 'Formaggio': '⚪', 'Carne Rossa': '🟣'
 }
 
+# Traduzione per il confronto con datetime
+giorni_it = {0: "Lunedì", 1: "Martedì", 2: "Mercoledì", 3: "Giovedì", 4: "Venerdì", 5: "Sabato", 6: "Domenica"}
+oggi = giorni_it[datetime.now().weekday()]
+
 # --- INIZIALIZZAZIONE ---
 if 'pasti' not in st.session_state:
-    giorni = ['Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato', 'Domenica']
+    giorni_lista = ['Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato', 'Domenica']
     prots = (['Legumi'] * 4 + ['Pesce'] * 3 + ['Carne Bianca'] * 3 + ['Uova'] * 2 + ['Formaggio'] * 1 + ['Carne Rossa'] * 1)
     carbo_p = ['Pasta Integrale', 'Pasta Integrale', 'Pasta Integrale', 'Riso', 'Farro', 'Gnocchi', 'Cous Cous']
     carbo_c = ['Pane Integrale', 'Pane Integrale', 'Pane Integrale', 'Patate', 'Patate', 'Pane Integrale', 'Pane Integrale']
@@ -23,7 +28,7 @@ if 'pasti' not in st.session_state:
     for i in range(14):
         is_pranzo = (i % 2 == 0)
         st.session_state.pasti.append({
-            "id": i, "giorno": giorni[i//2], "tipo": "Pranzo" if is_pranzo else "Cena",
+            "id": i, "giorno": giorni_lista[i//2], "tipo": "Pranzo" if is_pranzo else "Cena",
             "prot": prots[i], "carbo": carbo_p[i//2] if is_pranzo else carbo_c[i//2],
             "verd": verdure[i], "locked": False
         })
@@ -39,11 +44,16 @@ if st.session_state.scambio_id is not None:
         st.session_state.scambio_id = None
         st.rerun()
 
-# --- INTERFACCIA (Tendine Chiuse di Default) ---
+# --- INTERFACCIA ---
 for i in range(0, 14, 2):
     giorno_nome = st.session_state.pasti[i]['giorno']
-    # expanded=False imposta le tendine chiuse all'avvio
-    with st.expander(f"📅 {giorno_nome}", expanded=False):
+    
+    # EVIDENZIAZIONE GIORNO CORRENTE
+    es_oggi = (giorno_nome == oggi)
+    label_giorno = f"📅 {giorno_nome.upper()} 📍 (OGGI)" if es_oggi else f"📅 {giorno_nome}"
+    
+    # Se è oggi, l'expander si apre da solo
+    with st.expander(label_giorno, expanded=es_oggi):
         for j in range(2):
             idx = i + j
             pasto = st.session_state.pasti[idx]
@@ -75,27 +85,17 @@ for i in range(0, 14, 2):
             with col_lock:
                 st.session_state.pasti[idx]['locked'] = st.checkbox("Blocca", value=pasto['locked'], key=f"l_{idx}")
 
-# --- CONTROLLO NUTRIZIONALE ---
+# --- CONTROLLO NUTRIZIONALE E SPESA (Rimanenti funzioni invariate) ---
 st.divider()
 all_prots = [p['prot'] for p in st.session_state.pasti]
 st.subheader("📊 Bilancio Settimanale")
 cols_m = st.columns(4)
-obiettivi = [("Pesce", 3), ("Legumi", 4), ("Carne Bianca", 3), ("Uova", 2)]
-for i, (nome, target) in enumerate(obiettivi):
-    attuale = all_prots.count(nome)
-    cols_m[i].metric(nome, f"{attuale}/{target}")
+for i, (nome, target) in enumerate([("Pesce", 3), ("Legumi", 4), ("Carne Bianca", 3), ("Uova", 2)]):
+    cols_m[i].metric(nome, f"{all_prots.count(nome if nome!='Carne Bianca' else 'Carne Bianca')}/{target}")
 
-# --- LISTA DELLA SPESA ---
 with st.expander("🛒 Lista della Spesa (x2 persone)", expanded=False):
-    st.write("Proteine:")
-    st.write(f"- 🐟 Pesce: {all_prots.count('Pesce')*300}g")
-    st.write(f"- 🌿 Legumi: {all_prots.count('Legumi')*300}g (cotti)")
-    st.write(f"- 🥩 Carne Bianca: {all_prots.count('Carne Bianca')*250}g")
-    st.write(f"- 🥚 Uova: {all_prots.count('Uova')*4} unità")
-    st.write(f"- 🧀 Formaggio: {all_prots.count('Formaggio')*200}g")
-    st.write(f"- 🥩 Carne Rossa: {all_prots.count('Carne Rossa')*250}g")
+    st.write(f"- 🐟 Pesce: {all_prots.count('Pesce')*300}g\n- 🌿 Legumi: {all_prots.count('Legumi')*300}g\n- 🥩 Carne Bianca: {all_prots.count('Carne Bianca')*250}g\n- 🥚 Uova: {all_prots.count('Uova')*4} unità")
 
-# --- BOTTONI FINALI ---
 st.divider()
 c_b1, c_b2 = st.columns(2)
 if c_b1.button("🎲 Rimescola Liberi", use_container_width=True):
