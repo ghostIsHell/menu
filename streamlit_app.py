@@ -3,8 +3,8 @@ import random
 
 st.set_page_config(page_title="Menù Salute", page_icon="🥗", layout="wide")
 
-# Colori solo per il testo/pallini (senza quadrati grandi)
-COLORI_TESTO = {
+# Emoji per identificare le proteine
+EMOJI_PROT = {
     'Pesce': '🔵', 'Legumi': '🟢', 'Carne Bianca': '🟡',
     'Uova': '🔴', 'Formaggio': '⚪', 'Carne Rossa': '🟣'
 }
@@ -29,9 +29,9 @@ if 'pasti' not in st.session_state:
         })
     st.session_state.scambio_id = None
 
-st.title("🥗 Il Mio Menù Modificabile")
+st.title("🥗 Il Mio Menù Benessere")
 
-# --- LOGICA SCAMBIO AL TOCCO ---
+# --- LOGICA SCAMBIO ---
 if st.session_state.scambio_id is not None:
     p_sel = st.session_state.pasti[st.session_state.scambio_id]
     st.warning(f"🔄 Scambio: **{p_sel['giorno']} {p_sel['tipo']}** selezionato. Clicca 'Sposta' su un altro pasto.")
@@ -39,27 +39,30 @@ if st.session_state.scambio_id is not None:
         st.session_state.scambio_id = None
         st.rerun()
 
-# --- INTERFACCIA COMPATTA ---
+# --- INTERFACCIA CON GERARCHIA VISIVA ---
 for i in range(0, 14, 2):
     giorno_nome = st.session_state.pasti[i]['giorno']
     with st.expander(f"📅 {giorno_nome}", expanded=True):
-        col1, col2 = st.columns(2)
-        
-        for j, col in enumerate([col1, col2]):
+        for j in range(2):
             idx = i + j
             pasto = st.session_state.pasti[idx]
-            emoji = COLORI_TESTO.get(pasto['prot'], '🔹')
-            lucchetto = "🔒" if pasto['locked'] else "🔓"
+            emoji = EMOJI_PROT.get(pasto['prot'], '🔹')
+            icona_tipo = "☀️" if j == 0 else "🌙"
             
-            with col:
-                # Testo compatto senza box
-                st.markdown(f"**{lucchetto} {pasto['tipo'].upper()}**")
-                st.markdown(f"🍝 **{pasto['carbo']}**")
-                st.markdown(f"{emoji} {pasto['prot']} + {pasto['verd']}")
-                
-                # Pulsanti mini
-                c_btn1, c_btn2 = st.columns([1, 1])
-                if c_btn1.button("Sposta", key=f"mov_{idx}"):
+            col_testo, col_sposta, col_lock = st.columns([0.65, 0.18, 0.17])
+            
+            with col_testo:
+                # Gerarchia visiva: Carboidrato grande, resto piccolo
+                st.markdown(f"""
+                <div style="line-height: 1.2;">
+                    <span style="font-size: 0.85em; color: #888;">{icona_tipo} {pasto['tipo'].upper()}</span><br>
+                    <span style="font-size: 1.25em; font-weight: bold; color: #1E88E5;">{pasto['carbo']}</span> 
+                    <span style="font-size: 0.95em; color: #555;">con {emoji} {pasto['prot']} e {pasto['verd']}</span>
+                </div>
+                """, unsafe_allow_html=True)
+            
+            with col_sposta:
+                if st.button("Sposta", key=f"m_{idx}"):
                     if st.session_state.scambio_id is None:
                         st.session_state.scambio_id = idx
                     else:
@@ -68,32 +71,26 @@ for i in range(0, 14, 2):
                         st.session_state.pasti[id1]['verd'], st.session_state.pasti[id2]['verd'] = st.session_state.pasti[id2]['verd'], st.session_state.pasti[id1]['verd']
                         st.session_state.scambio_id = None
                     st.rerun()
-                
-                st.session_state.pasti[idx]['locked'] = c_btn2.checkbox("Blocca", value=pasto['locked'], key=f"l_{idx}")
+            
+            with col_lock:
+                st.session_state.pasti[idx]['locked'] = st.checkbox("Blocca", value=pasto['locked'], key=f"l_{idx}")
 
 # --- CONTROLLO NUTRIZIONALE E BOTTONI ---
 st.divider()
 all_prots = [p['prot'] for p in st.session_state.pasti]
-st.subheader("📊 Controllo Frequenze")
-m1, m2, m3, m4 = st.columns(4)
-m1.metric("Pesce", f"{all_prots.count('Pesce')}/3")
-m2.metric("Legumi", f"{all_prots.count('Legumi')}/4")
-m3.metric("Bianca", f"{all_prots.count('Carne Bianca')}/3")
-m4.metric("Uova", f"{all_prots.count('Uova')}/2")
+cols_m = st.columns(4)
+obiettivi = [("Pesce", 3), ("Legumi", 4), ("Bianca", 3), ("Uova", 2)]
+for i, (nome, target) in enumerate(obiettivi):
+    attuale = all_prots.count(nome if nome != "Bianca" else "Carne Bianca")
+    cols_m[i].metric(nome, f"{attuale}/{target}")
 
-c_b1, c_b2, c_b3 = st.columns(3)
-if c_b1.button("🎲 Rimescola", use_container_width=True):
-    lib_idx = [i for i, p in enumerate(st.session_state.pasti) if not p['locked']]
+c_b1, c_b2 = st.columns(2)
+c_b1.button("🎲 Rimescola Liberi", on_click=lambda: rimescola(), use_container_width=True)
+c_b2.button("🔄 Nuova Base / Reset", on_click=lambda: st.session_state.clear(), use_container_width=True)
+
+def rimescola():
+    lib_idx = [k for k, p in enumerate(st.session_state.pasti) if not p['locked']]
     for attr in ['prot', 'verd']:
         vals = [st.session_state.pasti[k][attr] for k in lib_idx]
         random.shuffle(vals)
-        for i, k in enumerate(lib_idx): st.session_state.pasti[k][attr] = vals[i]
-    st.rerun()
-
-if c_b2.button("🔄 Nuova Base", use_container_width=True):
-    del st.session_state.pasti
-    st.rerun()
-
-if c_b3.button("🗑️ Reset Blocchi", use_container_width=True):
-    for p in st.session_state.pasti: p['locked'] = False
-    st.rerun()
+        for idx_val, k in enumerate(lib_idx): st.session_state.pasti[k][attr] = vals[idx_val]
