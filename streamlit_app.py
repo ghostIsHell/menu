@@ -1,58 +1,38 @@
 import streamlit as st
-import pandas as pd
 import random
 
-# Configurazione Pagina
-st.set_page_config(page_title="Il Mio Menù Salute", page_icon="🥗")
-
-st.title("🥗 Generatore Menù Settimanale")
-st.write("Basato sulle linee guida ufficiali del Ministero della Salute.")
-
-# Inizializzazione dati se non esistono (per "fissare" il menù)
-if 'menu_settimanale' not in st.session_state:
-    st.session_state.menu_settimanale = None
-
-def genera_menu():
+# --- CONFIGURAZIONE ---
+if 'pasti' not in st.session_state:
+    # Generazione iniziale bilanciata
+    prots = (['Legumi'] * 4 + ['Pesce'] * 3 + ['Carne Bianca'] * 3 + ['Uova'] * 2 + ['Formaggio'] * 1 + ['Carne Rossa'] * 1)
+    random.shuffle(prots)
     giorni = ['Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato', 'Domenica']
-    proteine = (['Legumi'] * 4 + ['Pesce'] * 3 + ['Carne Bianca'] * 3 + 
-                ['Uova'] * 2 + ['Formaggio'] * 1 + ['Carne Rossa'] * 1)
-    carbo_p = ['Pasta Integrale', 'Pasta Integrale', 'Pasta Integrale', 'Riso', 'Farro', 'Gnocchi', 'Cous Cous']
-    carbo_c = ['Pane Integrale', 'Pane Integrale', 'Pane Integrale', 'Patate', 'Patate', 'Pane Integrale', 'Pane Integrale']
-    verdure = ['Zucchine', 'Asparagi', 'Spinaci', 'Bieta', 'Finocchi', 'Carote', 'Piselli', 
-               'Insalata Mista', 'Pomodori', 'Peperoni', 'Broccoli', 'Melanzane', 'Fagiolini', 'Carciofi']
+    # Creiamo una lista piatta di 14 pasti (0=Lun Pranzo, 1=Lun Cena, etc.)
+    st.session_state.pasti = [{"id": i, "giorno": giorni[i//2], "tipo": "Pranzo" if i%2==0 else "Cena", "prot": prots[i]} for i in range(14)]
 
-    # Logica di bilanciamento
-    for _ in range(2000):
-        random.shuffle(proteine); random.shuffle(carbo_p); random.shuffle(carbo_c); random.shuffle(verdure)
-        valido = True
-        for i in range(7):
-            p_p, p_c = proteine[i*2], proteine[i*2+1]
-            if p_p == p_c or (p_p == 'Pesce' and p_c == 'Pesce'): valido = False; break
-            if i > 0 and p_p == 'Pesce' and proteine[(i-1)*2+1] == 'Pesce': valido = False; break
-        if valido:
-            res = []
-            for i in range(7):
-                res.append({"Giorno": giorni[i], "Pranzo": f"{carbo_p[i]} con {proteine[i*2]} e {verdure[i*2]}", 
-                            "Cena": f"{proteine[i*2+1]} con {verdure[i*2+1]} e {carbo_c[i]}"})
-            return pd.DataFrame(res)
+st.title("🥗 Menù con Scambio Automatico")
+st.write("Se sposti una proteina, quella di destinazione prenderà il suo posto per non rompere l'equilibrio.")
 
-# Pulsante per generare
-if st.button("🔄 Genera Nuovo Menù"):
-    st.session_state.menu_settimanale = genera_menu()
+# --- LOGICA DI SCAMBIO ---
+col_scambio1, col_scambio2 = st.columns(2)
+with col_scambio1:
+    sorgente = st.selectbox("Sposta il pasto di:", [f"{p['giorno']} {p['tipo']} ({p['prot']})" for p in st.session_state.pasti], key="src")
+with col_scambio2:
+    destinazione = st.selectbox("Al posto di:", [f"{p['giorno']} {p['tipo']} ({p['prot']})" for p in st.session_state.pasti], key="dst")
 
-# Visualizzazione Menù
-if st.session_state.menu_settimanale is not None:
-    for index, row in st.session_state.menu_settimanale.iterrows():
-        with st.expander(f"📅 {row['Giorno']}"):
-            st.markdown(f"**☀️ Pranzo:** {row['Pranzo']}")
-            st.markdown(f"**🌙 Cena:** {row['Cena']}")
+if st.button("🔄 Conferma Scambio"):
+    idx1 = [f"{p['giorno']} {p['tipo']} ({p['prot']})" for p in st.session_state.pasti].index(sorgente)
+    idx2 = [f"{p['giorno']} {p['tipo']} ({p['prot']})" for p in st.session_state.pasti].index(destinazione)
     
-    # Lista della Spesa Automatica
-    if st.checkbox("🛒 Mostra Lista della Spesa (per 2 persone)"):
-        all_text = " ".join(st.session_state.menu_settimanale['Pranzo']) + " " + " ".join(st.session_state.menu_settimanale['Cena'])
-        st.write(f"- 🐟 Pesce: {all_text.count('Pesce') * 300}g")
-        st.write(f"- 🥩 Carne Bianca: {all_text.count('Carne Bianca') * 250}g")
-        st.write(f"- 🥚 Uova: {all_text.count('Uova') * 4} unità")
-        st.write(f"- 🌿 Legumi: {all_text.count('Legumi') * 300}g (cotti)")
-else:
-    st.info("Clicca sul pulsante sopra per generare il tuo primo menù!")
+    # Lo scambio vero e proprio (Swap)
+    st.session_state.pasti[idx1]['prot'], st.session_state.pasti[idx2]['prot'] = st.session_state.pasti[idx2]['prot'], st.session_state.pasti[idx1]['prot']
+    st.success(f"Scambiato {st.session_state.pasti[idx2]['prot']} con {st.session_state.pasti[idx1]['prot']}!")
+    st.rerun()
+
+# --- VISUALIZZAZIONE ---
+for i in range(0, 14, 2):
+    with st.container():
+        c1, c2 = st.columns(2)
+        p1, p2 = st.session_state.pasti[i], st.session_state.pasti[i+1]
+        c1.info(f"**{p1['giorno']} Pranzo**\n\n{p1['prot']}")
+        c2.warning(f"**{p2['giorno']} Cena**\n\n{p2['prot']}")
