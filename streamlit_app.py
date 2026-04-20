@@ -39,10 +39,11 @@ if st.session_state.scambio_id is not None:
         st.session_state.scambio_id = None
         st.rerun()
 
-# --- INTERFACCIA ---
+# --- INTERFACCIA (Tendine Chiuse di Default) ---
 for i in range(0, 14, 2):
     giorno_nome = st.session_state.pasti[i]['giorno']
-    with st.expander(f"📅 {giorno_nome}", expanded=True):
+    # expanded=False imposta le tendine chiuse all'avvio
+    with st.expander(f"📅 {giorno_nome}", expanded=False):
         for j in range(2):
             idx = i + j
             pasto = st.session_state.pasti[idx]
@@ -52,7 +53,6 @@ for i in range(0, 14, 2):
             col_testo, col_sposta, col_lock = st.columns([0.65, 0.18, 0.17])
             
             with col_testo:
-                # Gerarchia visiva: Stesso colore, solo pesi diversi
                 st.markdown(f"""
                 <div style="line-height: 1.2; color: #31333F;">
                     <span style="font-size: 0.85em; opacity: 0.6;">{icona_tipo} {pasto['tipo'].upper()}</span><br>
@@ -86,7 +86,7 @@ for i, (nome, target) in enumerate(obiettivi):
     cols_m[i].metric(nome, f"{attuale}/{target}")
 
 # --- LISTA DELLA SPESA ---
-with st.expander("🛒 Lista della Spesa (x2 persone)"):
+with st.expander("🛒 Lista della Spesa (x2 persone)", expanded=False):
     st.write("Proteine:")
     st.write(f"- 🐟 Pesce: {all_prots.count('Pesce')*300}g")
     st.write(f"- 🌿 Legumi: {all_prots.count('Legumi')*300}g (cotti)")
