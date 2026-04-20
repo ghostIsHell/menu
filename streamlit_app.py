@@ -3,10 +3,10 @@ import random
 
 st.set_page_config(page_title="Menù Salute", page_icon="🥗", layout="wide")
 
-# Palette colori originale
-COLORI = {
-    'Pesce': '#D1E8FF', 'Legumi': '#D4EDDA', 'Carne Bianca': '#FFF3CD',
-    'Uova': '#F8D7DA', 'Formaggio': '#E2E3E5', 'Carne Rossa': '#FCE4EC'
+# Colori solo per il testo/pallini (senza quadrati grandi)
+COLORI_TESTO = {
+    'Pesce': '🔵', 'Legumi': '🟢', 'Carne Bianca': '🟡',
+    'Uova': '🔴', 'Formaggio': '⚪', 'Carne Rossa': '🟣'
 }
 
 # --- INIZIALIZZAZIONE ---
@@ -34,12 +34,12 @@ st.title("🥗 Il Mio Menù Modificabile")
 # --- LOGICA SCAMBIO AL TOCCO ---
 if st.session_state.scambio_id is not None:
     p_sel = st.session_state.pasti[st.session_state.scambio_id]
-    st.info(f"🔄 Selezionato: **{p_sel['giorno']} {p_sel['tipo']}**. Clicca su un altro pasto per scambiare condimenti e verdure.")
-    if st.button("Annulla scambio"):
+    st.warning(f"🔄 Scambio: **{p_sel['giorno']} {p_sel['tipo']}** selezionato. Clicca 'Sposta' su un altro pasto.")
+    if st.button("Annulla"):
         st.session_state.scambio_id = None
         st.rerun()
 
-# --- INTERFACCIA A EXPANDER ---
+# --- INTERFACCIA COMPATTA ---
 for i in range(0, 14, 2):
     giorno_nome = st.session_state.pasti[i]['giorno']
     with st.expander(f"📅 {giorno_nome}", expanded=True):
@@ -48,22 +48,17 @@ for i in range(0, 14, 2):
         for j, col in enumerate([col1, col2]):
             idx = i + j
             pasto = st.session_state.pasti[idx]
-            colore = COLORI.get(pasto['prot'], '#fff')
-            bordo = "3px solid #000" if st.session_state.scambio_id == idx else "1px solid #eee"
+            emoji = COLORI_TESTO.get(pasto['prot'], '🔹')
+            lucchetto = "🔒" if pasto['locked'] else "🔓"
             
             with col:
-                # Box Grafico Colorato
-                st.markdown(f"""
-                    <div style="background-color:{colore}; padding:15px; border-radius:10px; border:{bordo}; color: black; margin-bottom:10px;">
-                        <div style="font-size: 0.8em; font-weight: bold; opacity: 0.7;">{'🔒' if pasto['locked'] else '🔓'} {pasto['tipo'].upper()}</div>
-                        <div style="font-size: 1.1em; margin: 5px 0;"><strong>{pasto['carbo']}</strong></div>
-                        <div style="font-size: 1em;">con {pasto['prot']}</div>
-                        <div style="font-size: 0.85em; font-style: italic;">+ {pasto['verd']}</div>
-                    </div>
-                    """, unsafe_allow_html=True)
+                # Testo compatto senza box
+                st.markdown(f"**{lucchetto} {pasto['tipo'].upper()}**")
+                st.markdown(f"🍝 **{pasto['carbo']}**")
+                st.markdown(f"{emoji} {pasto['prot']} + {pasto['verd']}")
                 
-                # Pulsanti di controllo
-                c_btn1, c_btn2 = st.columns(2)
+                # Pulsanti mini
+                c_btn1, c_btn2 = st.columns([1, 1])
                 if c_btn1.button("Sposta", key=f"mov_{idx}"):
                     if st.session_state.scambio_id is None:
                         st.session_state.scambio_id = idx
@@ -83,11 +78,11 @@ st.subheader("📊 Controllo Frequenze")
 m1, m2, m3, m4 = st.columns(4)
 m1.metric("Pesce", f"{all_prots.count('Pesce')}/3")
 m2.metric("Legumi", f"{all_prots.count('Legumi')}/4")
-m3.metric("Carne Bianca", f"{all_prots.count('Carne Bianca')}/3")
+m3.metric("Bianca", f"{all_prots.count('Carne Bianca')}/3")
 m4.metric("Uova", f"{all_prots.count('Uova')}/2")
 
 c_b1, c_b2, c_b3 = st.columns(3)
-if c_b1.button("🎲 Rimescola Liberi", use_container_width=True):
+if c_b1.button("🎲 Rimescola", use_container_width=True):
     lib_idx = [i for i, p in enumerate(st.session_state.pasti) if not p['locked']]
     for attr in ['prot', 'verd']:
         vals = [st.session_state.pasti[k][attr] for k in lib_idx]
@@ -95,7 +90,7 @@ if c_b1.button("🎲 Rimescola Liberi", use_container_width=True):
         for i, k in enumerate(lib_idx): st.session_state.pasti[k][attr] = vals[i]
     st.rerun()
 
-if c_b2.button("🔄 Nuova Base Totale", use_container_width=True):
+if c_b2.button("🔄 Nuova Base", use_container_width=True):
     del st.session_state.pasti
     st.rerun()
 
