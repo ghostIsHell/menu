@@ -36,7 +36,7 @@ if 'pasti' not in st.session_state:
         })
 
 # --- INTERFACCIA ---
-st.title("🥗 Il Mio Menù Completo")
+st.title("🥗 Il Mio Menù Completo 2")
 
 # Area Scambio
 with st.expander("🔄 Scambia Pasti"):
