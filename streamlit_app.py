@@ -11,7 +11,7 @@ EMOJI_PROT = {'Pesce': '🔵', 'Legumi': '🟢', 'Carne Bianca': '🟡', 'Uova':
 giorni_it = {0: "Lunedì", 1: "Martedì", 2: "Mercoledì", 3: "Giovedì", 4: "Venerdì", 5: "Sabato", 6: "Domenica"}
 oggi = giorni_it[datetime.now().weekday()]
 
-# Pool predefiniti per la generazione automatica
+# Pool per generazione automatica
 POOL_CARBO_P = ['Pasta Integrale', 'Pasta Integrale', 'Pasta Integrale', 'Riso', 'Farro', 'Gnocchi', 'Cous Cous']
 POOL_CARBO_C = ['Pane Integrale', 'Pane Integrale', 'Pane Integrale', 'Patate', 'Patate', 'Pane Integrale', 'Pane Integrale']
 
@@ -25,7 +25,6 @@ def carica_da_disco():
         return df.to_dict('records')
     return None
 
-# --- LOGICA DI SCAMBIO ---
 def clicca_pasto(id_cliccato):
     if st.session_state.scambio_id is None:
         st.session_state.scambio_id = id_cliccato
@@ -64,7 +63,7 @@ if 'scambio_id' not in st.session_state:
 st.title("🥗 Il Mio Menù Benessere")
 
 if st.session_state.scambio_id is not None:
-    st.info("🔄 Modalità spostamento: seleziona il pasto di destinazione cliccandoci sopra.")
+    st.info("🔄 Modalità spostamento: clicca sul pasto di destinazione.")
     if st.button("Annulla Spostamento"):
         st.session_state.scambio_id = None
         st.rerun()
@@ -77,40 +76,33 @@ for i in range(0, 14, 2):
         for j in range(2):
             idx = i + j
             pasto = st.session_state.pasti[idx]
+            emoji = EMOJI_PROT.get(pasto['prot'], '🔹')
+            icona = '☀️ PRANZO' if j==0 else '🌙 CENA'
             
-            # Evidenziazione solo bordo
-            is_selected = (st.session_state.scambio_id == idx)
-            border_color = "#D32F2F" if is_selected else "#eee"
-            border_width = "3px" if is_selected else "1px"
+            # Creiamo l'etichetta del bottone
+            testo_bottone = f"{icona}: {pasto['carbo']} + {emoji} {pasto['prot']} + {pasto['verd']}"
+            
+            # Se selezionato, aggiungiamo un indicatore visivo nel testo
+            if st.session_state.scambio_id == idx:
+                testo_bottone = f"➡️ SELEZIONATO: {testo_bottone}"
 
-            # Riquadro cliccabile tramite pulsante trasparente sopra HTML
-            with st.container():
-                st.markdown(f"""
-                    <div style="border: {border_width} solid {border_color}; border-radius:10px; padding:10px; margin-bottom: -45px; pointer-events: none;">
-                        <span style="font-size:0.8em; opacity:0.6;">{'☀️' if j==0 else '🌙'} {pasto['tipo'].upper()}</span><br>
-                        <b>{pasto['carbo']}</b> con {EMOJI_PROT.get(pasto['prot'], '🔹')} {pasto['prot']} e {pasto['verd']}
-                    </div>
-                """, unsafe_allow_html=True)
-                
-                # Il pulsante diventa "invisibile" ma copre l'area per permettere il click
-                st.button(" ", key=f"pasto_{idx}", on_click=clicca_pasto, args=(idx,), use_container_width=True)
-                st.session_state.pasti[idx]['locked'] = st.checkbox("Blocca pasto", value=pasto['locked'], key=f"l_{idx}", on_change=salva_su_disco)
+            # Pulsante che contiene tutto il testo
+            st.button(testo_bottone, key=f"btn_{idx}", on_click=clicca_pasto, args=(idx,), use_container_width=True)
+            st.session_state.pasti[idx]['locked'] = st.checkbox("Blocca pasto", value=pasto['locked'], key=f"l_{idx}", on_change=salva_su_disco)
 
-# --- LOGICA AUTOMATICA ---
+# --- BOTTONI AZIONE ---
 def rimescola_bilanciato():
-    idx_p_liberi = [k for k in range(0, 14, 2) if not st.session_state.pasti[k]['locked']]
-    idx_c_liberi = [k for k in range(1, 14, 2) if not st.session_state.pasti[k]['locked']]
-    idx_tutti_liberi = [k for k, p in enumerate(st.session_state.pasti) if not p['locked']]
-
-    for attr in ['prot', 'verd']:
-        vals = [st.session_state.pasti[k][attr] for k in idx_tutti_liberi]
-        random.shuffle(vals)
-        for i, k in enumerate(idx_tutti_liberi): st.session_state.pasti[k][attr] = vals[i]
-
-    for idx_group in [idx_p_liberi, idx_c_liberi]:
-        c_vals = [st.session_state.pasti[k]['carbo'] for k in idx_group]
-        random.shuffle(c_vals)
-        for i, k in enumerate(idx_group): st.session_state.pasti[k]['carbo'] = c_vals[i]
+    idx_p_lib = [k for k in range(0, 14, 2) if not st.session_state.pasti[k]['locked']]
+    idx_c_lib = [k for k in range(1, 14, 2) if not st.session_state.pasti[k]['locked']]
+    idx_tutti = [k for k, p in enumerate(st.session_state.pasti) if not p['locked']]
+    for a in ['prot', 'verd']:
+        v = [st.session_state.pasti[k][a] for k in idx_tutti]
+        random.shuffle(v)
+        for x, k in enumerate(idx_tutti): st.session_state.pasti[k][a] = v[x]
+    for g in [idx_p_lib, idx_c_lib]:
+        v = [st.session_state.pasti[k]['carbo'] for k in g]
+        random.shuffle(v)
+        for x, k in enumerate(g): st.session_state.pasti[k]['carbo'] = v[x]
     salva_su_disco()
 
 st.divider()
