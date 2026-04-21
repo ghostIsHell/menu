@@ -7,31 +7,32 @@ from datetime import datetime
 
 # --- 1. COSTANTI E STAGIONALITÀ ---
 CONFIG = {
-    "FILE_SALVATAGGIO": "menu_salute_crea.csv",
+    "FILE_SALVATAGGIO": "menu_salute_piatto_unico.csv",
     "EMOJI_PROT": {
         'Legumi': '🟢', 'Pesce': '🔵', 'Carne Bianca': '⚪', 
-        'Uova': '🟣', 'Formaggio': '🟡', 'Carne Rossa': '🔴'
+        'Uova': '🟣', 'Formaggio': '🟡', 'Carne Rossa': '🔴',
+        'Pizza': '🍕', 'Piatto Unico': '🍲'
     },
     "CARBO_PRANZO": ['Pasta Integrale', 'Riso Integrale', 'Farro', 'Orzo', 'Gnocchi'],
     "CARBO_CENA": ['Pane Integrale', 'Patate', 'Cous Cous Integrale'],
     "TARGET_PROTEINE": {
-        "Legumi": 4, "Pesce": 3, "Carne Bianca": 3, "Uova": 2, "Formaggio": 1, "Carne Rossa": 1
+        "Legumi": 3, "Pesce": 3, "Carne Bianca": 2, "Uova": 2, 
+        "Formaggio": 1, "Carne Rossa": 1, "Pizza": 1, "Piatto Unico": 1
     },
+    "PIATTI_UNICI_ESEMPI": [
+        "Pasta e Fagioli", "Riso e Piselli", "Insalatona (Tonno+Pane+Verdura)", 
+        "Cous Cous Pollo e Verdure", "Panino Integrale Pollo/Verdura", 
+        "Frittata al forno con Patate", "Torta salata Ricotta/Spinaci"
+    ],
     "VERDURE_STAGIONALI": {
         "Inverno": ['Broccoli', 'Cavolfiore', 'Finocchi', 'Spinaci', 'Bietole', 'Carciofi', 'Zucca'],
         "Primavera": ['Asparagi', 'Piselli', 'Fave', 'Carciofi', 'Zucchine', 'Insalata'],
         "Estate": ['Pomodori', 'Peperoni', 'Melanzane', 'Zucchine', 'Fagiolini', 'Cetrioli'],
         "Autunno": ['Zucca', 'Funghi', 'Broccoli', 'Spinaci', 'Finocchi', 'Carote']
     },
-    "PORZIONI": {
-        "Cereali (Pasta, Riso)": "80g", "Pane": "50g", "Carne/Pesce": "100g",
-        "Legumi secchi": "50g", "Legumi scatola": "150g", "Verdura": "200g"
-    },
-    "TITLE": "🥗 Menù Settimanale"
+    "TITLE": "🥗 Menù Settimanale Avanzato"
 }
 
-# --- LOGICA DI AGGREGAZIONE ---
-# Creiamo il pool globale per la selezione manuale
 TUTTE_LE_VERDURE = sorted(list(set([v for sublist in CONFIG["VERDURE_STAGIONALI"].values() for v in sublist])))
 CONFIG["TUTTI_CARBO"] = sorted(list(set(CONFIG["CARBO_PRANZO"] + CONFIG["CARBO_CENA"])))
 
@@ -46,10 +47,6 @@ STAGIONE_ATTUALE = get_stagione()
 VERDURE_AUTOMATICHE = CONFIG["VERDURE_STAGIONALI"][STAGIONE_ATTUALE]
 
 # --- 2. FUNZIONI DI SUPPORTO ---
-def get_index_safe(lista, valore):
-    try: return lista.index(valore)
-    except: return 0
-
 def build_protein_pool():
     pool = []
     for prot, count in CONFIG["TARGET_PROTEINE"].items():
@@ -70,11 +67,14 @@ def genera_pasti(pasti_esistenti=None):
             nuovi_pasti.append(pasto_vecchio)
             if pasto_vecchio['prot'] in prot_pool: prot_pool.remove(pasto_vecchio['prot'])
         else:
+            prot = prot_pool.pop() if prot_pool else "Legumi"
+            # Se è Pizza o Piatto Unico, il carbo è "Incluso"
+            carbo = "Già incluso nel piatto" if prot in ['Pizza', 'Piatto Unico'] else random.choice(CONFIG["CARBO_PRANZO"] if tipo == "Pranzo" else CONFIG["CARBO_CENA"])
+            
             nuovi_pasti.append({
                 "id": i, "giorno": giorni[i//2], "tipo": tipo,
-                "prot": prot_pool.pop() if prot_pool else "Legumi",
-                "carbo": random.choice(CONFIG["CARBO_PRANZO"] if tipo == "Pranzo" else CONFIG["CARBO_CENA"]),
-                "verd": random.choice(VERDURE_AUTOMATICHE), # Solo stagionali in automatico
+                "prot": prot, "carbo": carbo,
+                "verd": random.choice(VERDURE_AUTOMATICHE),
                 "locked": False
             })
     return nuovi_pasti
@@ -90,56 +90,42 @@ def save_data():
     pd.DataFrame(st.session_state.pasti).to_csv(CONFIG["FILE_SALVATAGGIO"], index=False)
 
 # --- 4. UI ---
-def render_header():
-    st.title(CONFIG["TITLE"])
-    st.info(f"📅 Stagione: **{STAGIONE_ATTUALE}**. La generazione automatica userà solo verdure fresche di questo periodo.")
-    
-    with st.expander("ℹ️ Grammature Standard e Linee Guida"):
-        cols = st.columns(2)
-        items = list(CONFIG["PORZIONI"].items())
-        mid = len(items)//2
-        for i, (k, v) in enumerate(items):
-            with cols[0 if i < mid else 1]: st.write(f"**{k}**: {v}")
-
-    if st.session_state.scambio_idx is not None:
-        p1 = st.session_state.pasti[st.session_state.scambio_idx]
-        st.warning(f"🔄 Scambio: Selezionato **{p1['giorno']} {p1['tipo']}**")
-        if st.button("Annulla"):
-            st.session_state.scambio_idx = None
-            st.rerun()
-    
-    if st.button("🔄 GENERA NUOVO MENÙ BILANCIATO", use_container_width=True):
-        st.session_state.pasti = genera_pasti(st.session_state.pasti)
-        st.session_state.menu_key = str(uuid.uuid4())
-        save_data()
-        st.rerun()
-
 def render_pasto_editor(idx):
     pasto = st.session_state.pasti[idx]
-    
     with st.container(border=True):
         st.markdown(f"**{'☀️' if pasto['tipo'] == 'Pranzo' else '🌙'} {pasto['tipo']}**")
         
-        new_p = st.selectbox("Proteina", list(CONFIG["EMOJI_PROT"].keys()), 
-                             index=get_index_safe(list(CONFIG["EMOJI_PROT"].keys()), pasto['prot']),
+        # Selezione Proteina/Tipo Pasto
+        new_p = st.selectbox("Fonte Proteica / Piatto Unico", list(CONFIG["EMOJI_PROT"].keys()), 
+                             index=list(CONFIG["EMOJI_PROT"].keys()).index(pasto['prot']),
                              key=f"p_{idx}_{st.session_state.menu_key}")
         
-        new_c = st.selectbox("Cereale", CONFIG["TUTTI_CARBO"], 
-                             index=get_index_safe(CONFIG["TUTTI_CARBO"], pasto['carbo']),
-                             key=f"c_{idx}_{st.session_state.menu_key}")
+        # Logica Carboidrati: disabilita se è un piatto unico
+        if new_p in ['Pizza', 'Piatto Unico']:
+            st.info("💡 Carboidrati già inclusi nel piatto.")
+            new_c = "Già incluso nel piatto"
+        else:
+            options_c = CONFIG["TUTTI_CARBO"]
+            curr_c = pasto['carbo'] if pasto['carbo'] in options_c else options_c[0]
+            new_c = st.selectbox("Cereale", options_c, index=options_c.index(curr_c), key=f"c_{idx}_{st.session_state.menu_key}")
         
-        # MANUALE: Qui usiamo TUTTE_LE_VERDURE per massima libertà
-        new_v = st.selectbox("Verdura", TUTTE_LE_VERDURE, 
-                             index=get_index_safe(TUTTE_LE_VERDURE, pasto['verd']),
+        new_v = st.selectbox("Verdura (Sempre necessaria!)", TUTTE_LE_VERDURE, 
+                             index=TUTTE_LE_VERDURE.index(pasto['verd']),
                              key=f"v_{idx}_{st.session_state.menu_key}")
         
+        # Suggerimenti specifici per Pizza e Piatti Unici
+        if new_p == 'Pizza':
+            st.warning("🍕 Consigli: Preferisci impasto integrale. Accompagna con finocchi o insalata scondita per limitare l'indice glicemico.")
+        if new_p == 'Piatto Unico':
+            esempio = random.choice(CONFIG["PIATTI_UNICI_ESEMPI"])
+            st.success(f"🍲 Esempio: {esempio}. Ricorda: 1 sola fonte proteica nell'insalatona!")
+
         if new_p != pasto['prot'] or new_c != pasto['carbo'] or new_v != pasto['verd']:
             st.session_state.pasti[idx].update({"prot": new_p, "carbo": new_c, "verd": new_v})
             save_data()
 
         c1, c2 = st.columns(2)
         pasto['locked'] = c1.checkbox("Blocca", value=bool(pasto['locked']), key=f"l_{idx}_{st.session_state.menu_key}")
-        
         if c2.button("↔️ SPOSTA", key=f"bt_{idx}_{st.session_state.menu_key}", use_container_width=True):
             if st.session_state.scambio_idx is None:
                 st.session_state.scambio_idx = idx
@@ -154,15 +140,28 @@ def render_pasto_editor(idx):
                 save_data()
                 st.rerun()
 
-# --- 5. MAIN ---
 def main():
     st.set_page_config(page_title="Menù Salute", layout="wide")
-    
     if 'menu_key' not in st.session_state: st.session_state.menu_key = str(uuid.uuid4())
     if 'pasti' not in st.session_state: st.session_state.pasti = load_data()
     if 'scambio_idx' not in st.session_state: st.session_state.scambio_idx = None
 
-    render_header()
+    st.title(CONFIG["TITLE"])
+    
+    # Sezione "Regole del Piatto Sano"
+    with st.expander("📚 Pillole di Educazione Alimentare (Pizza e Piatti Unici)"):
+        st.markdown("""
+        - **La Pizza:** Equivale a una porzione abbondante di carboidrati + proteine (mozzarella) + grassi. Consumala **1 volta a settimana**.
+        - **Piatti Unici:** Pasta e fagioli, insalatone o panini sani sono sostituti validi. 
+        - **Regola d'oro:** Qualunque sia il sostituto, accompagnalo sempre con verdura extra per garantire fibre e sazietà.
+        - **Il Falso Amico:** Attenzione a birra, bibite o dolci con la pizza; sbilanciano il pasto.
+        """)
+
+    if st.button("🔄 GENERA NUOVO MENÙ BILANCIATO", use_container_width=True):
+        st.session_state.pasti = genera_pasti(st.session_state.pasti)
+        st.session_state.menu_key = str(uuid.uuid4())
+        save_data()
+        st.rerun()
 
     giorni_it = ["Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato", "Domenica"]
     oggi_idx = datetime.now().weekday()
@@ -174,6 +173,7 @@ def main():
             with col_sx: render_pasto_editor(idx_pasti[0])
             with col_dx: render_pasto_editor(idx_pasti[1])
 
+    # Statistiche
     st.divider()
     st.subheader("📊 Frequenze Settimanali")
     all_prots = [p['prot'] for p in st.session_state.pasti]
@@ -182,26 +182,11 @@ def main():
     for i, (nome, target) in enumerate(CONFIG["TARGET_PROTEINE"].items()):
         attuale = all_prots.count(nome)
         emoji = CONFIG["EMOJI_PROT"][nome]
-
-        # Feedback visivo
-        if attuale == target: 
-            color = "normal"
-            arrow = "off"
-            string = f"↕ Target: {target}"
-        elif attuale > target: 
-            color = "inverse"
-            arrow = "up"
-            string = f"Target: {target}"
-        else: 
-            color = "off"
-            arrow = "down"
-            string = f"Target: {target}"
-
-        st_col = cols[i]
         
-        st_col.metric(f"{emoji} {nome}", f"{attuale}", delta=f"{string}", delta_color=f"{color}", delta_arrow=f"{arrow}")
-                
-        # cols[i].metric(label=f"{emoji} {nome}", value=f"{attuale}/{target}", delta=icona, delta_color="normal")
+        color = "normal" if attuale == target else "inverse" if attuale > target else "off"
+        arrow = "none" if attuale == target else "up" if attuale > target else "down"
+        
+        cols[i].metric(label=f"{emoji} {nome}", value=f"{attuale}", delta=f"Target: {target}", delta_color=color, delta_arrow=arrow)
 
 if __name__ == "__main__":
     main()
