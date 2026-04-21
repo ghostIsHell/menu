@@ -16,17 +16,23 @@ CONFIG = {
     "OPZIONI_VERD": ['Zucchine', 'Asparagi', 'Spinaci', 'Bieta', 'Finocchi', 'Carote', 'Piselli', 
                      'Insalata', 'Pomodori', 'Peperoni', 'Broccoli', 'Melanzane', 'Fagiolini'],
     "TARGET_PROTEINE": {"Legumi": 4, "Pesce": 3, "Carne Bianca": 3, "Uova": 2},
-    "TITOLO": "🥗 Menù Settimanale",
-    "BOTTONE_RESET": "🗑️ RESET SETTIMANA"
+    "TITOLO": "🥗 Menù Settimanale Salute",
+    "BOTTONE_RESET": "🗑️ GENERA NUOVA SETTIMANA"
 }
 
 # --- 2. LOGICA DI BUSINESS (PURE FUNCTIONS) ---
+def get_index_safe(lista, valore):
+    """Ritorna l'indice se il valore esiste, altrimenti 0 per evitare crash."""
+    try:
+        return lista.index(valore)
+    except (ValueError, KeyError):
+        return 0
+
 def build_protein_pool():
     """Crea la lista di proteine basata sui target settimanali."""
     pool = []
     for prot, count in CONFIG["TARGET_PROTEINE"].items():
         pool.extend([prot] * count)
-    # Aggiungiamo extra per coprire i 14 pasti
     mentre_mancano = 14 - len(pool)
     pool.extend(random.choices(list(CONFIG["EMOJI_PROT"].keys()), k=mentre_mancano))
     random.shuffle(pool)
@@ -39,10 +45,8 @@ def genera_pasti(pasti_esistenti=None):
     
     nuovi_pasti = []
     for i in range(14):
-        # Se il pasto è bloccato, lo manteniamo così com'è
         if pasti_esistenti and i < len(pasti_esistenti) and pasti_esistenti[i].get('locked'):
             nuovi_pasti.append(pasti_esistenti[i])
-            # Rimuoviamo la proteina usata dal pool se presente per bilanciare le rimanenti
             if pasti_esistenti[i]['prot'] in prot_pool:
                 prot_pool.remove(pasti_esistenti[i]['prot'])
         else:
@@ -57,18 +61,39 @@ def genera_pasti(pasti_esistenti=None):
             })
     return nuovi_pasti
 
+def scambia_pasti(idx1, idx2):
+    """Scambia i contenuti di due pasti nello state e salva."""
+    campi = ['prot', 'carbo', 'verd', 'locked']
+    for campo in campi:
+        st.session_state.pasti[idx1][campo], st.session_state.pasti[idx2][campo] = \
+        st.session_state.pasti[idx2][campo], st.session_state.pasti[idx1][campo]
+    
+    st.session_state.scambio_idx = None
+    save_data(st.session_state.pasti)
+
 # --- 3. DATA PERSISTENCE (STORAGE) ---
 def load_data():
     if os.path.exists(CONFIG["FILE_SALVATAGGIO"]):
-        return pd.read_csv(CONFIG["FILE_SALVATAGGIO"]).to_dict('records')
+        try:
+            return pd.read_csv(CONFIG["FILE_SALVATAGGIO"]).to_dict('records')
+        except:
+            return genera_pasti()
     return genera_pasti()
 
 def save_data(pasti):
     pd.DataFrame(pasti).to_csv(CONFIG["FILE_SALVATAGGIO"], index=False)
 
-# --- 4. COMPONENTI UI (UI MODULES) ---
+# --- 4. COMPONENTI UI ---
 def render_header():
     st.title(CONFIG["TITOLO"])
+    
+    if st.session_state.scambio_idx is not None:
+        p1 = st.session_state.pasti[st.session_state.scambio_idx]
+        st.warning(f"🔄 Selezionato: **{p1['giorno']} ({p1['tipo']})**. Clicca 'SPOSTA QUI' su un altro pasto.")
+        if st.button("Annulla Spostamento"):
+            st.session_state.scambio_idx = None
+            st.rerun()
+    
     if st.button(CONFIG["BOTTONE_RESET"], use_container_width=True):
         st.session_state.pasti = genera_pasti(st.session_state.pasti)
         st.session_state.menu_key = str(uuid.uuid4())
@@ -77,25 +102,44 @@ def render_header():
 
 def render_pasto_editor(idx):
     pasto = st.session_state.pasti[idx]
-    with st.container():
+    is_selezionato = (st.session_state.scambio_idx == idx)
+    
+    # CSS minimale per evidenziare la selezione
+    border_style = "2px solid #FF4B4B" if is_selezionato else "1px solid #ddd"
+    
+    with st.container(border=True):
         st.markdown(f"**{'☀️' if pasto['tipo'] == 'Pranzo' else '🌙'} {pasto['tipo']}**")
         
-        # Widget compatti
-        c1, c2 = st.columns(2)
-        new_p = c1.selectbox("Proteina", list(CONFIG["EMOJI_PROT"].keys()), 
-                             index=list(CONFIG["EMOJI_PROT"].keys()).index(pasto['prot']),
+        # Selectbox con protezione crash index
+        new_p = st.selectbox("Proteina", list(CONFIG["EMOJI_PROT"].keys()), 
+                             index=get_index_safe(list(CONFIG["EMOJI_PROT"].keys()), pasto['prot']),
                              key=f"p_{idx}_{st.session_state.menu_key}")
-        new_c = c2.selectbox("Carbo", CONFIG["OPZIONI_CARBO"], 
-                             index=CONFIG["OPZIONI_CARBO"].index(pasto['carbo']),
+        
+        new_c = st.selectbox("Cereale", CONFIG["OPZIONI_CARBO"], 
+                             index=get_index_safe(CONFIG["OPZIONI_CARBO"], pasto['carbo']),
                              key=f"c_{idx}_{st.session_state.menu_key}")
         
         new_v = st.selectbox("Verdura", CONFIG["OPZIONI_VERD"], 
-                             index=CONFIG["OPZIONI_VERD"].index(pasto['verd']),
+                             index=get_index_safe(CONFIG["OPZIONI_VERD"], pasto['verd']),
                              key=f"v_{idx}_{st.session_state.menu_key}")
         
-        new_l = st.checkbox("Blocca", value=pasto['locked'], key=f"l_{idx}_{st.session_state.menu_key}")
+        c1, c2 = st.columns(2)
+        new_l = c1.checkbox("Blocca", value=bool(pasto['locked']), key=f"l_{idx}_{st.session_state.menu_key}")
+        
+        # Logica tasto Sposta
+        label_sposta = "📍 QUI" if is_selezionato else "↔️ SPOSTA"
+        if c2.button(label_sposta, key=f"mv_{idx}_{st.session_state.menu_key}", use_container_width=True):
+            if st.session_state.scambio_idx is None:
+                st.session_state.scambio_idx = idx
+                st.rerun()
+            elif st.session_state.scambio_idx == idx:
+                st.session_state.scambio_idx = None
+                st.rerun()
+            else:
+                scambia_pasti(st.session_state.scambio_idx, idx)
+                st.rerun()
 
-        # Sync se i dati cambiano
+        # Update se cambiano i valori
         if (new_p != pasto['prot'] or new_c != pasto['carbo'] or 
             new_v != pasto['verd'] or new_l != pasto['locked']):
             st.session_state.pasti[idx].update({"prot": new_p, "carbo": new_c, "verd": new_v, "locked": new_l})
@@ -103,7 +147,7 @@ def render_pasto_editor(idx):
 
 def render_statistiche():
     st.divider()
-    st.subheader("📊 Bilancio Settimanale")
+    st.subheader("📊 Bilancio Settimanale Target")
     all_prots = [p['prot'] for p in st.session_state.pasti]
     cols = st.columns(len(CONFIG["TARGET_PROTEINE"]))
     
@@ -113,7 +157,7 @@ def render_statistiche():
         emoji = CONFIG["EMOJI_PROT"][nome]
         cols[i].metric(f"{emoji} {nome}", f"{attuale}/{target}", delta=delta)
 
-# --- 5. MAIN APP CYCLE ---
+# --- 5. MAIN APP ---
 def main():
     st.set_page_config(page_title="Menù Salute", page_icon="🥗", layout="wide")
     
@@ -122,16 +166,19 @@ def main():
         st.session_state.menu_key = str(uuid.uuid4())
     if 'pasti' not in st.session_state:
         st.session_state.pasti = load_data()
+    if 'scambio_idx' not in st.session_state:
+        st.session_state.scambio_idx = None
 
     render_header()
 
-    # Layout Giorni
-    giorni = {p['giorno'] for p in st.session_state.pasti}
-    oggi = giorni_it = {0: "Lunedì", 1: "Martedì", 2: "Mercoledì", 3: "Giovedì", 4: "Venerdì", 5: "Sabato", 6: "Domenica"}[datetime.now().weekday()]
+    # Calcolo giorno corrente
+    giorni_it = ["Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato", "Domenica"]
+    oggi_nome = giorni_it[datetime.now().weekday()]
 
-    for g_nome in ["Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato", "Domenica"]:
-        with st.expander(f"📅 {g_nome.upper()}", expanded=(g_nome == oggi)):
-            # Filtriamo i pasti per quel giorno
+    # Visualizzazione
+    for g_nome in giorni_it:
+        is_oggi = (g_nome == oggi_nome)
+        with st.expander(f"{'📍 ' if is_oggi else ''}{g_nome.upper()}", expanded=is_oggi):
             idx_pasti = [i for i, p in enumerate(st.session_state.pasti) if p['giorno'] == g_nome]
             col_sx, col_dx = st.columns(2)
             with col_sx: render_pasto_editor(idx_pasti[0])
