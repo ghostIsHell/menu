@@ -187,7 +187,7 @@ def main():
         if attuale == target: 
             color = "normal"
             arrow = "off"
-            string = f"Target: {target}"
+            string = f"↕ Target: {target}"
         elif attuale > target: 
             color = "inverse"
             arrow = "up"
@@ -195,7 +195,7 @@ def main():
         else: 
             color = "off"
             arrow = "down"
-            string = f"↕ Target: {target}"
+            string = f"Target: {target}"
 
         st_col = cols[i]
         
