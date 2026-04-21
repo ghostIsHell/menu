@@ -30,7 +30,7 @@ CONFIG = {
         "Estate": ['Pomodori', 'Peperoni', 'Melanzane', 'Zucchine', 'Fagiolini', 'Cetrioli'],
         "Autunno": ['Zucca', 'Funghi', 'Broccoli', 'Spinaci', 'Finocchi', 'Carote']
     },
-    "TITLE": "🥗 Menù Settimanale Avanzato"
+    "TITLE": "🥗 Menù Settimanale"
 }
 
 TUTTE_LE_VERDURE = sorted(list(set([v for sublist in CONFIG["VERDURE_STAGIONALI"].values() for v in sublist])))
@@ -115,7 +115,7 @@ def render_pasto_editor(idx):
         
         # Suggerimenti specifici per Pizza e Piatti Unici
         if new_p == 'Pizza':
-            st.warning("🍕 Consigli: Preferisci impasto integrale. Accompagna con finocchi o insalata scondita per limitare l'indice glicemico.")
+            st.warning("🍕 Consigli: Preferisci impasto integrale. Accompagna con finocchi o insalata scondita.")
         if new_p == 'Piatto Unico':
             esempio = random.choice(CONFIG["PIATTI_UNICI_ESEMPI"])
             st.success(f"🍲 Esempio: {esempio}. Ricorda: 1 sola fonte proteica nell'insalatona!")
@@ -154,10 +154,10 @@ def main():
         - **La Pizza:** Equivale a una porzione abbondante di carboidrati + proteine (mozzarella) + grassi. Consumala **1 volta a settimana**.
         - **Piatti Unici:** Pasta e fagioli, insalatone o panini sani sono sostituti validi. 
         - **Regola d'oro:** Qualunque sia il sostituto, accompagnalo sempre con verdura extra per garantire fibre e sazietà.
-        - **Il Falso Amico:** Attenzione a birra, bibite o dolci con la pizza; sbilanciano il pasto.
+        - **Il Falso Amico:** Non eccedere con birra, bibite o dolci con la pizza; sbilanciano il pasto.
         """)
 
-    if st.button("🔄 GENERA NUOVO MENÙ BILANCIATO", use_container_width=True):
+    if st.button("🔄 GENERA NUOVO MENÙ", use_container_width=True):
         st.session_state.pasti = genera_pasti(st.session_state.pasti)
         st.session_state.menu_key = str(uuid.uuid4())
         save_data()
