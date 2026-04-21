@@ -9,8 +9,8 @@ from datetime import datetime
 CONFIG = {
     "FILE_SALVATAGGIO": "menu_salute_crea.csv",
     "EMOJI_PROT": {
-        'Legumi': '🟢', 'Pesce': '🔵', 'Carne Bianca': '🟡', 
-        'Uova': '🔴', 'Formaggio': '⚪', 'Carne Rossa': '🟣'
+        'Legumi': '🟢', 'Pesce': '🔵', 'Carne Bianca': '⚪', 
+        'Uova': '🟣', 'Formaggio': '🟡', 'Carne Rossa': '🔴'
     },
     "CARBO_PRANZO": ['Pasta Integrale', 'Riso Integrale', 'Farro', 'Orzo', 'Gnocchi'],
     "CARBO_CENA": ['Pane Integrale', 'Patate', 'Cous Cous Integrale'],
@@ -183,14 +183,15 @@ def main():
         attuale = all_prots.count(nome)
         emoji = CONFIG["EMOJI_PROT"][nome]
 
-        st_col = cols[i]
-        st_col.metric(f"{emoji} {nome}", f"{attuale}", delta=f"Target: {target}", delta_color="red")
-        
         # Feedback visivo
-        # if attuale == target: icona = "✅ "
-        # elif attuale > target: icona = "⚠️"
-        # else: icona = "📉"
+        if attuale == target: color = "green"
+        elif attuale > target: color = "red"
+        else: color = "off"
+
+        st_col = cols[i]
         
+        st_col.metric(f"{emoji} {nome}", f"{attuale}", delta=f"Target: {target}", delta_color=f"{color}")
+                
         # cols[i].metric(label=f"{emoji} {nome}", value=f"{attuale}/{target}", delta=icona, delta_color="normal")
 
 if __name__ == "__main__":
