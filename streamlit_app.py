@@ -92,8 +92,13 @@ def save_data():
 # --- 4. UI ---
 def render_pasto_editor(idx):
     pasto = st.session_state.pasti[idx]
+    is_selected = (st.session_state.scambio_idx == idx)
+    
     with st.container(border=True):
-        st.markdown(f"**{'☀️' if pasto['tipo'] == 'Pranzo' else '🌙'} {pasto['tipo']}**")
+        if is_selected:
+            st.markdown("### 🔄 SPOSTAMENTO")
+        else:
+            st.markdown(f"**{'☀️' if pasto['tipo'] == 'Pranzo' else '🌙'} {pasto['tipo']}**")
         
         # Selezione Proteina/Tipo Pasto
         new_p = st.selectbox("Fonte Proteica / Piatto Unico", list(CONFIG["EMOJI_PROT"].keys()), 
@@ -117,8 +122,8 @@ def render_pasto_editor(idx):
         if new_p == 'Pizza':
             st.warning("🍕 Consigli: Preferisci impasto integrale. Accompagna con finocchi o insalata scondita.")
         if new_p == 'Piatto Unico':
-            esempio = random.choice(CONFIG["PIATTI_UNICI_ESEMPI"])
-            st.success(f"🍲 Esempio: {esempio}. Ricorda: 1 sola fonte proteica nell'insalatona!")
+            esempio_fisso = CONFIG["PIATTI_UNICI_ESEMPI"][idx % len(CONFIG["PIATTI_UNICI_ESEMPI"])]
+            st.success(f"🍲 Esempio: {esempio_fisso}")
 
         if new_p != pasto['prot'] or new_c != pasto['carbo'] or new_v != pasto['verd']:
             st.session_state.pasti[idx].update({"prot": new_p, "carbo": new_c, "verd": new_v})
@@ -126,9 +131,17 @@ def render_pasto_editor(idx):
 
         c1, c2 = st.columns(2)
         pasto['locked'] = c1.checkbox("Blocca", value=bool(pasto['locked']), key=f"l_{idx}_{st.session_state.menu_key}")
-        if c2.button("↔️ SPOSTA", key=f"bt_{idx}_{st.session_state.menu_key}", use_container_width=True):
+
+        # --- BOTTONE SPOSTA DINAMICO ---
+        btn_label = "✅ CONFERMA SCAMBIO" if (st.session_state.scambio_idx is not None and not is_selected) else "↔️ SPOSTA"
+        if is_selected: btn_label = "🚫 ANNULLA"
+        
+        if c2.button(btn_label, key=f"bt_{idx}_{st.session_state.menu_key}", use_container_width=True, type="primary" if is_selected else "secondary"):
             if st.session_state.scambio_idx is None:
                 st.session_state.scambio_idx = idx
+                st.rerun()
+            elif is_selected:
+                st.session_state.scambio_idx = None
                 st.rerun()
             else:
                 idx1, idx2 = st.session_state.scambio_idx, idx
@@ -160,6 +173,8 @@ def main():
     if st.button("🔄 GENERA NUOVO MENÙ", use_container_width=True):
         st.session_state.pasti = genera_pasti(st.session_state.pasti)
         st.session_state.menu_key = str(uuid.uuid4())
+        # --- AGGIUNTA: Reset dello stato di scambio se attivo ---
+        st.session_state.scambio_idx = None
         save_data()
         st.rerun()
 
