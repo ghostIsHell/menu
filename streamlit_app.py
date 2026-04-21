@@ -182,13 +182,16 @@ def main():
     for i, (nome, target) in enumerate(CONFIG["TARGET_PROTEINE"].items()):
         attuale = all_prots.count(nome)
         emoji = CONFIG["EMOJI_PROT"][nome]
+
+        st_col = cols[i]
+        st_col.metric(f"{emoji} {nome}", f"{attuale}", delta=f"Target: {target}", delta_color="off")
         
         # Feedback visivo
-        if attuale == target: icona = "✅"
-        elif attuale > target: icona = "⚠️"
-        else: icona = "📉"
+        # if attuale == target: icona = "✅ "
+        # elif attuale > target: icona = "⚠️"
+        # else: icona = "📉"
         
-        cols[i].metric(label=f"{emoji} {nome}", value=f"{attuale}/{target}", delta=icona, delta_color="normal")
+        # cols[i].metric(label=f"{emoji} {nome}", value=f"{attuale}/{target}", delta=icona, delta_color="normal")
 
 if __name__ == "__main__":
     main()
