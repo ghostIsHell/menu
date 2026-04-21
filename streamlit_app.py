@@ -29,7 +29,11 @@ CONFIG = {
     }
 }
 
-# --- 2. FUNZIONI DI SUPPORTO ---
+# --- LOGICA DI AGGREGAZIONE ---
+# Creiamo il pool globale per la selezione manuale
+TUTTE_LE_VERDURE = sorted(list(set([v for sublist in CONFIG["VERDURE_STAGIONALI"].values() for v in sublist])))
+CONFIG["TUTTI_CARBO"] = sorted(list(set(CONFIG["CARBO_PRANZO"] + CONFIG["CARBO_CENA"])))
+
 def get_stagione():
     mese = datetime.now().month
     if mese in [12, 1, 2]: return "Inverno"
@@ -37,11 +41,10 @@ def get_stagione():
     if mese in [6, 7, 8]: return "Estate"
     return "Autunno"
 
-# Impostiamo le verdure in base alla stagione attuale
 STAGIONE_ATTUALE = get_stagione()
-OPZIONI_VERD_ATTUALI = CONFIG["VERDURE_STAGIONALI"][STAGIONE_ATTUALE]
-CONFIG["TUTTI_CARBO"] = sorted(list(set(CONFIG["CARBO_PRANZO"] + CONFIG["CARBO_CENA"])))
+VERDURE_AUTOMATICHE = CONFIG["VERDURE_STAGIONALI"][STAGIONE_ATTUALE]
 
+# --- 2. FUNZIONI DI SUPPORTO ---
 def get_index_safe(lista, valore):
     try: return lista.index(valore)
     except: return 0
@@ -62,14 +65,16 @@ def genera_pasti(pasti_esistenti=None):
     for i in range(14):
         tipo = "Pranzo" if i%2 == 0 else "Cena"
         if pasti_esistenti and i < len(pasti_esistenti) and pasti_esistenti[i].get('locked'):
-            nuovi_pasti.append(pasti_esistenti[i])
-            if pasti_esistenti[i]['prot'] in prot_pool: prot_pool.remove(pasti_esistenti[i]['prot'])
+            pasto_vecchio = pasti_esistenti[i]
+            nuovi_pasti.append(pasto_vecchio)
+            if pasto_vecchio['prot'] in prot_pool: prot_pool.remove(pasto_vecchio['prot'])
         else:
             nuovi_pasti.append({
                 "id": i, "giorno": giorni[i//2], "tipo": tipo,
                 "prot": prot_pool.pop() if prot_pool else "Legumi",
                 "carbo": random.choice(CONFIG["CARBO_PRANZO"] if tipo == "Pranzo" else CONFIG["CARBO_CENA"]),
-                "verd": random.choice(OPZIONI_VERD_ATTUALI), "locked": False
+                "verd": random.choice(VERDURE_AUTOMATICHE), # Solo stagionali in automatico
+                "locked": False
             })
     return nuovi_pasti
 
@@ -86,9 +91,9 @@ def save_data():
 # --- 4. UI ---
 def render_header():
     st.title("🥗 Menù Salute Ministeriale")
-    st.info(f"📅 Stagione rilevata: **{STAGIONE_ATTUALE}** (Verdure fresche di stagione selezionate)")
+    st.info(f"📅 Stagione: **{STAGIONE_ATTUALE}**. La generazione automatica userà solo verdure fresche di questo periodo.")
     
-    with st.expander("ℹ️ Grammature Standard"):
+    with st.expander("ℹ️ Grammature Standard e Linee Guida"):
         cols = st.columns(2)
         items = list(CONFIG["PORZIONI"].items())
         mid = len(items)//2
@@ -97,12 +102,11 @@ def render_header():
 
     if st.session_state.scambio_idx is not None:
         p1 = st.session_state.pasti[st.session_state.scambio_idx]
-        st.warning(f"🔄 Spostamento: **{p1['giorno']} {p1['tipo']}**. Clicca SPOSTA su un altro pasto.")
-        if st.button("Annulla spostamento"):
+        st.warning(f"🔄 Scambio: Selezionato **{p1['giorno']} {p1['tipo']}**")
+        if st.button("Annulla"):
             st.session_state.scambio_idx = None
             st.rerun()
     
-    # Pulsante rimosso dal rosso (type="primary" rimosso o cambiato)
     if st.button("🔄 GENERA NUOVO MENÙ BILANCIATO", use_container_width=True):
         st.session_state.pasti = genera_pasti(st.session_state.pasti)
         st.session_state.menu_key = str(uuid.uuid4())
@@ -111,7 +115,6 @@ def render_header():
 
 def render_pasto_editor(idx):
     pasto = st.session_state.pasti[idx]
-    is_selezionato = (st.session_state.scambio_idx == idx)
     
     with st.container(border=True):
         st.markdown(f"**{'☀️' if pasto['tipo'] == 'Pranzo' else '🌙'} {pasto['tipo']}**")
@@ -124,9 +127,9 @@ def render_pasto_editor(idx):
                              index=get_index_safe(CONFIG["TUTTI_CARBO"], pasto['carbo']),
                              key=f"c_{idx}_{st.session_state.menu_key}")
         
-        # Le verdure ora mostrano quelle della stagione corretta
-        new_v = st.selectbox("Verdura", OPZIONI_VERD_ATTUALI, 
-                             index=get_index_safe(OPZIONI_VERD_ATTUALI, pasto['verd']),
+        # MANUALE: Qui usiamo TUTTE_LE_VERDURE per massima libertà
+        new_v = st.selectbox("Verdura", TUTTE_LE_VERDURE, 
+                             index=get_index_safe(TUTTE_LE_VERDURE, pasto['verd']),
                              key=f"v_{idx}_{st.session_state.menu_key}")
         
         if new_p != pasto['prot'] or new_c != pasto['carbo'] or new_v != pasto['verd']:
@@ -164,14 +167,12 @@ def main():
     oggi_idx = datetime.now().weekday()
 
     for i, g_nome in enumerate(giorni_it):
-        is_oggi = (i == oggi_idx)
-        with st.expander(f"{'📍 ' if is_oggi else ''}{g_nome.upper()}", expanded=is_oggi):
+        with st.expander(f"{'📍 ' if i == oggi_idx else ''}{g_nome.upper()}", expanded=(i == oggi_idx)):
             idx_pasti = [idx for idx, p in enumerate(st.session_state.pasti) if p['giorno'] == g_nome]
             col_sx, col_dx = st.columns(2)
             with col_sx: render_pasto_editor(idx_pasti[0])
             with col_dx: render_pasto_editor(idx_pasti[1])
 
-    # Statistiche con Check Visivo
     st.divider()
     st.subheader("📊 Frequenze Settimanali")
     all_prots = [p['prot'] for p in st.session_state.pasti]
@@ -181,15 +182,12 @@ def main():
         attuale = all_prots.count(nome)
         emoji = CONFIG["EMOJI_PROT"][nome]
         
-        # Logica del Check Visivo
-        stato = "✅" if attuale == target else "⚠️" if attuale > target else "📉"
+        # Feedback visivo
+        if attuale == target: icona = "✅"
+        elif attuale > target: icona = "⚠️"
+        else: icona = "📉"
         
-        cols[i].metric(
-            label=f"{emoji} {nome}", 
-            value=f"{attuale}/{target}", 
-            delta=stato,
-            delta_color="normal" if attuale <= target else "inverse"
-        )
+        cols[i].metric(label=f"{emoji} {nome}", value=f"{attuale}/{target}", delta=icona, delta_color="normal")
 
 if __name__ == "__main__":
     main()
