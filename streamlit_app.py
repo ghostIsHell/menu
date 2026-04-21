@@ -12,7 +12,9 @@ CONFIG = {
         'Pesce': '🔵', 'Legumi': '🟢', 'Carne Bianca': '🟡', 
         'Uova': '🔴', 'Formaggio': '⚪', 'Carne Rossa': '🟣'
     },
-    "OPZIONI_CARBO": ['Pasta Integrale', 'Riso', 'Farro', 'Gnocchi', 'Cous Cous', 'Pane Integrale', 'Patate'],
+    # Suddividiamo i carboidrati per pasto
+    "CARBO_PRANZO": ['Pasta Integrale', 'Riso', 'Farro', 'Gnocchi', 'Cous Cous'],
+    "CARBO_CENA": ['Pane Integrale', 'Patate'],
     "OPZIONI_VERD": ['Zucchine', 'Asparagi', 'Spinaci', 'Bieta', 'Finocchi', 'Carote', 'Piselli', 
                      'Insalata', 'Pomodori', 'Peperoni', 'Broccoli', 'Melanzane', 'Fagiolini'],
     "TARGET_PROTEINE": {"Legumi": 4, "Pesce": 3, "Carne Bianca": 3, "Uova": 2},
@@ -20,16 +22,17 @@ CONFIG = {
     "BOTTONE_RESET": "🗑️ GENERA NUOVA SETTIMANA"
 }
 
+# Uniamo le liste per le selectbox manuali (così l'utente può comunque scegliere tutto)
+CONFIG["TUTTI_CARBO"] = sorted(list(set(CONFIG["CARBO_PRANZO"] + CONFIG["CARBO_CENA"])))
+
 # --- 2. LOGICA DI BUSINESS (PURE FUNCTIONS) ---
 def get_index_safe(lista, valore):
-    """Ritorna l'indice se il valore esiste, altrimenti 0 per evitare crash."""
     try:
         return lista.index(valore)
     except (ValueError, KeyError):
         return 0
 
 def build_protein_pool():
-    """Crea la lista di proteine basata sui target settimanali."""
     pool = []
     for prot, count in CONFIG["TARGET_PROTEINE"].items():
         pool.extend([prot] * count)
@@ -39,39 +42,44 @@ def build_protein_pool():
     return pool
 
 def genera_pasti(pasti_esistenti=None):
-    """Genera la struttura della settimana rispettando i blocchi."""
     giorni = ['Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato', 'Domenica']
     prot_pool = build_protein_pool()
     
     nuovi_pasti = []
     for i in range(14):
+        tipo_pasto = "Pranzo" if i%2 == 0 else "Cena"
+        
         if pasti_esistenti and i < len(pasti_esistenti) and pasti_esistenti[i].get('locked'):
             nuovi_pasti.append(pasti_esistenti[i])
             if pasti_esistenti[i]['prot'] in prot_pool:
                 prot_pool.remove(pasti_esistenti[i]['prot'])
         else:
+            # SCELTA AUTOMATICA: Pasta/Cereali a pranzo, Pane/Patate a cena
+            if tipo_pasto == "Pranzo":
+                carbo_scelto = random.choice(CONFIG["CARBO_PRANZO"])
+            else:
+                carbo_scelto = random.choice(CONFIG["CARBO_CENA"])
+
             nuovi_pasti.append({
                 "id": i,
                 "giorno": giorni[i//2],
-                "tipo": "Pranzo" if i%2 == 0 else "Cena",
+                "tipo": tipo_pasto,
                 "prot": prot_pool.pop() if prot_pool else random.choice(list(CONFIG["EMOJI_PROT"].keys())),
-                "carbo": random.choice(CONFIG["OPZIONI_CARBO"]),
+                "carbo": carbo_scelto,
                 "verd": random.choice(CONFIG["OPZIONI_VERD"]),
                 "locked": False
             })
     return nuovi_pasti
 
 def scambia_pasti(idx1, idx2):
-    """Scambia i contenuti di due pasti nello state e salva."""
     campi = ['prot', 'carbo', 'verd', 'locked']
     for campo in campi:
         st.session_state.pasti[idx1][campo], st.session_state.pasti[idx2][campo] = \
         st.session_state.pasti[idx2][campo], st.session_state.pasti[idx1][campo]
-    
     st.session_state.scambio_idx = None
     save_data(st.session_state.pasti)
 
-# --- 3. DATA PERSISTENCE (STORAGE) ---
+# --- 3. DATA PERSISTENCE ---
 def load_data():
     if os.path.exists(CONFIG["FILE_SALVATAGGIO"]):
         try:
@@ -86,7 +94,6 @@ def save_data(pasti):
 # --- 4. COMPONENTI UI ---
 def render_header():
     st.title(CONFIG["TITOLO"])
-    
     if st.session_state.scambio_idx is not None:
         p1 = st.session_state.pasti[st.session_state.scambio_idx]
         st.warning(f"🔄 Selezionato: **{p1['giorno']} ({p1['tipo']})**. Clicca 'SPOSTA QUI' su un altro pasto.")
@@ -104,19 +111,16 @@ def render_pasto_editor(idx):
     pasto = st.session_state.pasti[idx]
     is_selezionato = (st.session_state.scambio_idx == idx)
     
-    # CSS minimale per evidenziare la selezione
-    border_style = "2px solid #FF4B4B" if is_selezionato else "1px solid #ddd"
-    
     with st.container(border=True):
         st.markdown(f"**{'☀️' if pasto['tipo'] == 'Pranzo' else '🌙'} {pasto['tipo']}**")
         
-        # Selectbox con protezione crash index
         new_p = st.selectbox("Proteina", list(CONFIG["EMOJI_PROT"].keys()), 
                              index=get_index_safe(list(CONFIG["EMOJI_PROT"].keys()), pasto['prot']),
                              key=f"p_{idx}_{st.session_state.menu_key}")
         
-        new_c = st.selectbox("Cereale", CONFIG["OPZIONI_CARBO"], 
-                             index=get_index_safe(CONFIG["OPZIONI_CARBO"], pasto['carbo']),
+        # Qui usiamo TUTTI_CARBO perché manualmente l'utente deve poter scegliere tutto
+        new_c = st.selectbox("Cereale", CONFIG["TUTTI_CARBO"], 
+                             index=get_index_safe(CONFIG["TUTTI_CARBO"], pasto['carbo']),
                              key=f"c_{idx}_{st.session_state.menu_key}")
         
         new_v = st.selectbox("Verdura", CONFIG["OPZIONI_VERD"], 
@@ -126,7 +130,6 @@ def render_pasto_editor(idx):
         c1, c2 = st.columns(2)
         new_l = c1.checkbox("Blocca", value=bool(pasto['locked']), key=f"l_{idx}_{st.session_state.menu_key}")
         
-        # Logica tasto Sposta
         label_sposta = "📍 QUI" if is_selezionato else "↔️ SPOSTA"
         if c2.button(label_sposta, key=f"mv_{idx}_{st.session_state.menu_key}", use_container_width=True):
             if st.session_state.scambio_idx is None:
@@ -139,7 +142,6 @@ def render_pasto_editor(idx):
                 scambia_pasti(st.session_state.scambio_idx, idx)
                 st.rerun()
 
-        # Update se cambiano i valori
         if (new_p != pasto['prot'] or new_c != pasto['carbo'] or 
             new_v != pasto['verd'] or new_l != pasto['locked']):
             st.session_state.pasti[idx].update({"prot": new_p, "carbo": new_c, "verd": new_v, "locked": new_l})
@@ -150,7 +152,6 @@ def render_statistiche():
     st.subheader("📊 Bilancio Settimanale Target")
     all_prots = [p['prot'] for p in st.session_state.pasti]
     cols = st.columns(len(CONFIG["TARGET_PROTEINE"]))
-    
     for i, (nome, target) in enumerate(CONFIG["TARGET_PROTEINE"].items()):
         attuale = all_prots.count(nome)
         delta = attuale - target
@@ -161,7 +162,6 @@ def render_statistiche():
 def main():
     st.set_page_config(page_title="Menù Salute", page_icon="🥗", layout="wide")
     
-    # Inizializzazione Session State
     if 'menu_key' not in st.session_state:
         st.session_state.menu_key = str(uuid.uuid4())
     if 'pasti' not in st.session_state:
@@ -171,11 +171,9 @@ def main():
 
     render_header()
 
-    # Calcolo giorno corrente
     giorni_it = ["Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato", "Domenica"]
     oggi_nome = giorni_it[datetime.now().weekday()]
 
-    # Visualizzazione
     for g_nome in giorni_it:
         is_oggi = (g_nome == oggi_nome)
         with st.expander(f"{'📍 ' if is_oggi else ''}{g_nome.upper()}", expanded=is_oggi):
