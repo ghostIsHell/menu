@@ -26,7 +26,8 @@ CONFIG = {
     "PORZIONI": {
         "Cereali (Pasta, Riso)": "80g", "Pane": "50g", "Carne/Pesce": "100g",
         "Legumi secchi": "50g", "Legumi scatola": "150g", "Verdura": "200g"
-    }
+    },
+    "TITLE": "🥗 Menù Settimanale"
 }
 
 # --- LOGICA DI AGGREGAZIONE ---
@@ -90,7 +91,7 @@ def save_data():
 
 # --- 4. UI ---
 def render_header():
-    st.title("🥗 Menù Salute Ministeriale")
+    st.title(CONFIG["TITLE"])
     st.info(f"📅 Stagione: **{STAGIONE_ATTUALE}**. La generazione automatica userà solo verdure fresche di questo periodo.")
     
     with st.expander("ℹ️ Grammature Standard e Linee Guida"):
