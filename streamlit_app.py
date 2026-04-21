@@ -184,13 +184,19 @@ def main():
         emoji = CONFIG["EMOJI_PROT"][nome]
 
         # Feedback visivo
-        if attuale == target: color = "green"
-        elif attuale > target: color = "red"
-        else: color = "off"
+        if attuale == target: 
+            color = "normal"
+            arrow = "off"
+        elif attuale > target: 
+            color = "inverse"
+            arrow = "up"
+        else: 
+            color = "off"
+            arrow = "down"
 
         st_col = cols[i]
         
-        st_col.metric(f"{emoji} {nome}", f"{attuale}", delta=f"Target: {target}", delta_color=f"{color}")
+        st_col.metric(f"{emoji} {nome}", f"{attuale}", delta=f"Target: {target}", delta_color=f"{color}", delta_arrow=f"{arrow}")
                 
         # cols[i].metric(label=f"{emoji} {nome}", value=f"{attuale}/{target}", delta=icona, delta_color="normal")
 
