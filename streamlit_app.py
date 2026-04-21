@@ -199,7 +199,7 @@ def main():
         emoji = CONFIG["EMOJI_PROT"][nome]
         
         color = "normal" if attuale == target else "inverse" if attuale > target else "off"
-        arrow = "none" if attuale == target else "up" if attuale > target else "down"
+        arrow = "off" if attuale == target else "up" if attuale > target else "down"
         
         cols[i].metric(label=f"{emoji} {nome}", value=f"{attuale}", delta=f"Target: {target}", delta_color=color, delta_arrow=arrow)
 
