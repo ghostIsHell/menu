@@ -171,7 +171,8 @@ def render_pasto_editor(idx):
 
 def render_shopping_list():
     st.subheader("🛒 Lista della Spesa")
-    num_persone = st.number_input("Numero di persone", min_value=1, value=1, step=1)
+    num_persone = st.session_state.shared_num_persone
+    st.info(f"Calcolo spesa per: **{num_persone} persone**")
     
     spesa = {}
     for p in st.session_state.pasti:
@@ -219,10 +220,18 @@ def main():
         - **Il Falso Amico:** Non eccedere con birra, bibite o dolci con la pizza; sbilanciano il pasto.
         """)
     
+    if 'shared_num_persone' not in st.session_state:
+        st.session_state.shared_num_persone = 2
+    
     with st.sidebar:
         st.header("Impostazioni")
-        usa_pizza = st.toggle("Includi Pizza settimanale", value=True)
-        num_persone_sidebar = st.number_input("Persone a tavola", 1, 10, 1)
+        st.session_state.shared_num_persone = st.number_input(
+            "Persone a tavola", 1, 10, 
+            value=st.session_state.shared_num_persone, 
+            key="input_sidebar"
+        )
+
+        usa_pizza = st.toggle("Includi Pizza settimanale", value=True)   
 
         if st.button("🔄 GENERA NUOVO MENÙ", use_container_width=True):
             st.session_state.pasti = genera_pasti(usa_pizza=usa_pizza)
