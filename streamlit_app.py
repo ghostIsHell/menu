@@ -184,7 +184,7 @@ def main():
         emoji = CONFIG["EMOJI_PROT"][nome]
 
         st_col = cols[i]
-        st_col.metric(f"{emoji} {nome}", f"{attuale}", delta=f"Target: {target}", delta_color="normal")
+        st_col.metric(f"{emoji} {nome}", f"{attuale}", delta=f"Target: {target}", delta_color="red")
         
         # Feedback visivo
         # if attuale == target: icona = "✅ "
