@@ -4,10 +4,11 @@ import pandas as pd
 import os
 import uuid
 from datetime import datetime
+import math
 
 # --- 1. COSTANTI E STAGIONALITÀ ---
 CONFIG = {
-    "FILE_SALVATAGGIO": "menu_salute_piatto_unico.csv",
+    "FILE_SALVATAGGIO": "menu_salute.csv",
     "EMOJI_PROT": {
         'Legumi': '🟢', 'Pesce': '🔵', 'Carne Bianca': '⚪', 
         'Uova': '🟣', 'Formaggio': '🟡', 'Carne Rossa': '🔴',
@@ -16,8 +17,8 @@ CONFIG = {
     "CARBO_PRANZO": ['Pasta Integrale', 'Riso Integrale', 'Farro', 'Orzo', 'Gnocchi'],
     "CARBO_CENA": ['Pane Integrale', 'Patate', 'Cous Cous Integrale'],
     "TARGET_PROTEINE": {
-        "Legumi": 3, "Pesce": 3, "Carne Bianca": 2, "Uova": 2, 
-        "Formaggio": 1, "Carne Rossa": 1, "Pizza": 1, "Piatto Unico": 1
+        "Legumi": 3, "Pesce": 3, "Carne Bianca": 2, "Uova": 3, 
+        "Formaggio": 1, "Carne Rossa": 1, "Piatto Unico": 1
     },
     "PIATTI_UNICI_ESEMPI": [
         "Pasta e Fagioli", "Riso e Piselli", "Insalatona (Tonno+Pane+Verdura)", 
@@ -29,6 +30,13 @@ CONFIG = {
         "Primavera": ['Asparagi', 'Piselli', 'Fave', 'Carciofi', 'Zucchine', 'Insalata'],
         "Estate": ['Pomodori', 'Peperoni', 'Melanzane', 'Zucchine', 'Fagiolini', 'Cetrioli'],
         "Autunno": ['Zucca', 'Funghi', 'Broccoli', 'Spinaci', 'Finocchi', 'Carote']
+    },
+    # Porzioni espresse in grammi/unità per persona
+    "PORZIONI_GRAMMI": {
+        "Pasta Integrale": 80, "Riso Integrale": 80, "Farro": 80, "Orzo": 80, "Gnocchi": 200,
+        "Pane Integrale": 50, "Patate": 200, "Cous Cous Integrale": 80,
+        "Legumi": 150, "Pesce": 150, "Carne Bianca": 100, "Carne Rossa": 100,
+        "Formaggio": 100, "Uova": 2, "Verdura": 200, "Pizza": 1
     },
     "TITLE": "🥗 Menù Settimanale"
 }
@@ -47,17 +55,25 @@ STAGIONE_ATTUALE = get_stagione()
 VERDURE_AUTOMATICHE = CONFIG["VERDURE_STAGIONALI"][STAGIONE_ATTUALE]
 
 # --- 2. FUNZIONI DI SUPPORTO ---
-def build_protein_pool():
+def build_protein_pool(usa_pizza):
     pool = []
-    for prot, count in CONFIG["TARGET_PROTEINE"].items():
+    targets = CONFIG["TARGET_PROTEINE"].copy()
+    if usa_pizza: #TODO Random?
+        targets["Pizza"] = 1
+    else:
+        targets["Legumi"] = targets.get("Legumi", 0) + 1
+
+    for prot, count in targets.items():
         pool.extend([prot] * count)
+
     while len(pool) < 14: pool.append("Legumi")
+
     random.shuffle(pool)
     return pool
 
-def genera_pasti(pasti_esistenti=None):
+def genera_pasti(pasti_esistenti=None, usa_pizza=True):
     giorni = ['Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato', 'Domenica']
-    prot_pool = build_protein_pool()
+    prot_pool = build_protein_pool(usa_pizza)
     nuovi_pasti = []
     
     for i in range(14):
@@ -153,6 +169,39 @@ def render_pasto_editor(idx):
                 save_data()
                 st.rerun()
 
+def render_shopping_list():
+    st.subheader("🛒 Lista della Spesa")
+    num_persone = st.number_input("Numero di persone", min_value=1, value=1, step=1)
+    
+    spesa = {}
+    for p in st.session_state.pasti:
+        # Conteggio Proteine
+        prot = p['prot']
+        spesa[prot] = spesa.get(prot, 0) + 1
+        # Conteggio Carboidrati
+        carbo = p['carbo']
+        if carbo != "Incluso" and carbo != "Già incluso nel piatto":
+            spesa[carbo] = spesa.get(carbo, 0) + 1
+        # Conteggio Verdure
+        verd = p['verd']
+        spesa[verd] = spesa.get(verd, 0) + 1
+
+    col1, col2 = st.columns(2)
+    items = list(spesa.items())
+    mid = math.ceil(len(items)/2)
+
+    for i, (item, freq) in enumerate(items):
+        target_col = col1 if i < mid else col2
+        grammi_unitari = CONFIG["PORZIONI_GRAMMI"].get(item, 200) # 200 default per verdura
+        totale = grammi_unitari * freq * num_persone
+        
+        unita = "g"
+        if item == "Uova": unita = "unità"
+        if item == "Pizza": unita = "basi"
+        
+        label = f"{item}: **{totale}{unita}**" if totale < 1000 else f"{item}: **{totale/1000:.2f}kg**"
+        target_col.checkbox(label, key=f"spesa_{item}")
+
 def main():
     st.set_page_config(page_title="Menù Salute", layout="wide")
     if 'menu_key' not in st.session_state: st.session_state.menu_key = str(uuid.uuid4())
@@ -169,14 +218,16 @@ def main():
         - **Regola d'oro:** Qualunque sia il sostituto, accompagnalo sempre con verdura extra per garantire fibre e sazietà.
         - **Il Falso Amico:** Non eccedere con birra, bibite o dolci con la pizza; sbilanciano il pasto.
         """)
+    
+    with st.sidebar:
+        st.header("Impostazioni")
+        usa_pizza = st.toggle("Includi Pizza settimanale", value=True)
+        num_persone_sidebar = st.number_input("Persone a tavola", 1, 10, 1)
 
-    if st.button("🔄 GENERA NUOVO MENÙ", use_container_width=True):
-        st.session_state.pasti = genera_pasti(st.session_state.pasti)
-        st.session_state.menu_key = str(uuid.uuid4())
-        # --- AGGIUNTA: Reset dello stato di scambio se attivo ---
-        st.session_state.scambio_idx = None
-        save_data()
-        st.rerun()
+        if st.button("🔄 GENERA NUOVO MENÙ", use_container_width=True):
+            st.session_state.pasti = genera_pasti(usa_pizza=usa_pizza)
+            st.session_state.scambio_idx = None
+            st.rerun()
 
     giorni_it = ["Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato", "Domenica"]
     oggi_idx = datetime.now().weekday()
@@ -192,16 +243,28 @@ def main():
     st.divider()
     st.subheader("📊 Frequenze Settimanali")
     all_prots = [p['prot'] for p in st.session_state.pasti]
-    cols = st.columns(len(CONFIG["TARGET_PROTEINE"]))
     
-    for i, (nome, target) in enumerate(CONFIG["TARGET_PROTEINE"].items()):
+    prots_to_show = list(CONFIG["TARGET_PROTEINE"].keys())
+    if "Pizza" in all_prots and "Pizza" not in prots_to_show:
+        prots_to_show.append("Pizza")
+    
+    cols = st.columns(len(prots_to_show))
+
+    for i, nome in enumerate(prots_to_show):
         attuale = all_prots.count(nome)
-        emoji = CONFIG["EMOJI_PROT"][nome]
+        if nome == "Pizza":
+            target = 1 if usa_pizza else 0
+        else:
+            target = CONFIG["TARGET_PROTEINE"].get(nome, 0)
+
+        emoji = CONFIG["EMOJI_PROT"].get(nome, '🍴')
         
         color = "normal" if attuale == target else "inverse" if attuale > target else "off"
         arrow = "off" if attuale == target else "up" if attuale > target else "down"
         
         cols[i].metric(label=f"{emoji} {nome}", value=f"{attuale}", delta=f"Target: {target}", delta_color=color, delta_arrow=arrow)
+
+    render_shopping_list()
 
 if __name__ == "__main__":
     main()
