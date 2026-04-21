@@ -187,16 +187,19 @@ def main():
         if attuale == target: 
             color = "normal"
             arrow = "off"
+            string = f"Target: {target}"
         elif attuale > target: 
             color = "inverse"
             arrow = "up"
+            string = f"Target: {target}"
         else: 
             color = "off"
             arrow = "down"
+            string = f"↕ Target: {target}"
 
         st_col = cols[i]
         
-        st_col.metric(f"{emoji} {nome}", f"{attuale}", delta=f"Target: {target}", delta_color=f"{color}", delta_arrow=f"{arrow}")
+        st_col.metric(f"{emoji} {nome}", f"{attuale}", delta=f"{string}", delta_color=f"{color}", delta_arrow=f"{arrow}")
                 
         # cols[i].metric(label=f"{emoji} {nome}", value=f"{attuale}/{target}", delta=icona, delta_color="normal")
 
