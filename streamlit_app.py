@@ -65,7 +65,8 @@ UI_TEXT = {
         "sugg": "ℹ️ Suggerimenti e Grammi", "single": "Porzione Singola", "total": "Totale per",
         "swap": "↔️ SCAMBIA", "confirm": "✅ CONFERMA", "lock": "Blocca", "pizza_tip": "🍕 Tip: Impasto integrale + contorno di finocchi/insalata.",
         "target_label": "Target",
-        "menu_saved": "✅ Menu salvato nel database!"
+        "menu_saved": "✅ Menu salvato nel database!",
+        "cancel": "🚫 CANCEL"
     },
     "EN": {
         "title": "Weekly Menu", "settings": "⚙️ Settings", "people": "People at the table",
@@ -80,7 +81,8 @@ UI_TEXT = {
         "sugg": "ℹ️ Suggestions & Grams", "single": "Single Portion", "total": "Total for",
         "swap": "↔️ SWAP", "confirm": "✅ CONFIRM", "lock": "Lock", "pizza_tip": "🍕 Tip: Whole dough + side of fennel/salad.",
         "target_label": "Target",
-        "menu_saved": "✅ Menu saved into database!"
+        "menu_saved": "✅ Menu saved into database!",
+        "cancel": "🚫 ANNULLA"
     }
 }
 
@@ -159,9 +161,10 @@ def generate_menu(pizza_on, current_meals=None):
 def main():
     st.set_page_config(page_title="Menu", layout="wide")
 
+# --- INIZIALIZZAZIONE STATO ---
     if "lang" not in st.session_state: st.session_state.lang = "IT"
-
     if "menu_version" not in st.session_state: st.session_state.menu_version = 0
+    if "swap_idx" not in st.session_state: st.session_state.swap_idx = None
     
     with st.sidebar:
         st.session_state.lang = st.radio("Language", ["IT", "EN"], horizontal=True)
@@ -180,7 +183,8 @@ def main():
             
         if st.button(T["save"], use_container_width=True):
             save_db(user, st.session_state.meals, T["menu_saved"])
-
+            
+    # Caricamento iniziale pasti
     if "meals" not in st.session_state:
         db = load_db(user)
         st.session_state.meals = db if db else generate_menu(piz)
@@ -216,11 +220,19 @@ def main():
             for j in range(2):
                 idx = i*2 + j
                 m = st.session_state.meals[idx]
-
                 v_key = st.session_state.menu_version
+
+                is_swapping = (st.session_state.swap_idx == idx)
+                active_swap = (st.session_state.swap_idx is not None)
                 
                 with cols[j].container(border=True):
-                    st.write(f"**{T['lunch' if j==0 else 'dinner']}**")
+                    
+                    if is_swapping:
+                        st.markdown("### 🔄 SPOSTA...")
+                    else:
+                        st.write(f"**{T['lunch' if j==0 else 'dinner']}**")
+
+                    # Selettori
                     new_p = st.selectbox(T["prot"], list(DATA["PROT"].keys()), index=list(DATA["PROT"].keys()).index(m["prot"]), format_func=lambda x: DATA["PROT"][x][st.session_state.lang], key=f"p{idx}_{v_key}")
                     
                     if new_p in ["Pizza", "One-Pot Meal"]:
@@ -245,12 +257,36 @@ def main():
 
                     # Swap & Lock
                     sl1, sl2 = st.columns(2)
-                    m["locked"] = sl1.checkbox(T["lock"], m["locked"], key=f"lk{idx}")
-                    if sl2.button(T["swap"], key=f"sw{idx}", use_container_width=True):
-                        if st.session_state.swap_idx is None: st.session_state.swap_idx = idx
-                        else:
-                            st.session_state.meals[idx], st.session_state.meals[st.session_state.swap_idx] = st.session_state.meals[st.session_state.swap_idx], st.session_state.meals[idx]
+                    m["locked"] = sl1.checkbox(T["lock"], m["locked"], key=f"lk{idx}_{v_key}")
+
+                    if is_swapping:
+                        btn_label = T["cancel"]
+                        btn_type = "secondary"
+                    elif active_swap:
+                        btn_label = T["confirm"]
+                        btn_type = "primary"
+                    else:
+                        btn_label = T["swap"]
+                        btn_type = "secondary"
+
+                    if sl2.button(btn_label, key=f"sw{idx}_{v_key}", use_container_width=True, type=btn_type):
+                        if st.session_state.swap_idx is None:
+                            # 1. Inizia lo scambio
+                            st.session_state.swap_idx = idx
+                            st.rerun()
+                        elif is_swapping:
+                            # 2. Annulla lo scambio
                             st.session_state.swap_idx = None
+                            st.rerun()
+                        else:
+                            # 3. Esegui lo scambio tra idx e swap_idx
+                            idx1, idx2 = st.session_state.swap_idx, idx
+                            # Scambiamo i dati nel dizionario
+                            st.session_state.meals[idx1], st.session_state.meals[idx2] = \
+                            st.session_state.meals[idx2], st.session_state.meals[idx1]
+                            # Reset stato scambio e incremento versione per refresh widget
+                            st.session_state.swap_idx = None
+                            st.session_state.menu_version += 1 
                             st.rerun()
 
     # --- SHOPPING LIST STILIZZATA ---
