@@ -5,7 +5,7 @@ import uuid
 from datetime import datetime
 from st_supabase_connection import SupabaseConnection
 
-# --- 1. CONFIGURATION ---
+# --- 1. CONFIGURATION & TRANSLATIONS ---
 CONFIG = {
     "TABLE_NAME": "user_dinner",
     "EMOJI_PROT": {
@@ -30,12 +30,88 @@ CONFIG = {
         "Whole Grain Bread": 50, "Potatoes": 200, "Whole Grain Couscous": 80,
         "Legumes": 150, "Fish": 150, "White Meat": 120, "Red Meat": 100,
         "Cheese": 100, "Eggs": 2, "Vegetables": 200, "Pizza": 1
+    }
+}
+
+TRANSLATIONS = {
+    "IT": {
+        "title": "Menù Settimanale",
+        "settings": "⚙️ Impostazioni",
+        "lang_label": "Lingua / Language",
+        "persone": "Persone a tavola",
+        "pizza_toggle": "Includi Pizza Settimanale",
+        "gen_btn": "🔄 GENERA E SALVA",
+        "save_btn": "💾 SALVA MODIFICHE",
+        "sync_msg": "Sincronizzato!",
+        "pills_title": "📚 Pillole di Educazione Alimentare",
+        "pills_content": """- **La Pizza:** Equivale a una porzione abbondante di carboidrati + proteine + grassi. Consumala **1 volta a settimana**.
+- **Piatti Unici:** Pasta e fagioli o insalatone sono sostituti validi. 
+- **Regola d'oro:** Accompagna sempre con verdura extra per garantire fibre e sazietà.
+- **Il Falso Amico:** Attenzione a birra o bibite con la pizza; sbilanciano il pasto.""",
+        "guide_title": "⚖️ Grammature Consigliate",
+        "guide_content": """**Porzioni standard (Adulto):**
+* **Cereali:** 80g / **Pane:** 50g
+* **Carne Bianca:** 120g / **Pesce:** 150g
+* **Legumi:** 150g (cotti) / **Uova:** 2
+* **Formaggio:** 50-100g / **Verdura:** 200g""",
+        "stats_title": "📊 Frequenze Settimanali",
+        "shop_title": "🛒 Lista della Spesa",
+        "shop_calc": "Calcolata automaticamente per",
+        "persona": "persona",
+        "persone_plur": "persone",
+        "days": ["Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato", "Domenica"],
+        "prot_label": "Proteina",
+        "carb_label": "Carboidrato",
+        "veg_label": "Verdura",
+        "sugg_label": "ℹ️ Suggerimenti e Grammi",
+        "single_label": "Singola Porzione",
+        "total_label": "Totale per",
+        "included": "Incluso",
+        "pizza_tip": "🍕 Tip: Impasto integrale + contorno di finocchi/insalata.",
+        "swap": "↔️ SCAMBIA",
+        "confirm": "✅ CONFERMA",
+        "cancel": "🚫 ANNULLA",
+        "lock": "Blocca"
     },
-    "ONE_POT_EXAMPLES": [
-        "Pasta and Beans", "Rice and Peas", "Tuna Salad (Tuna+Bread+Veg)", 
-        "Chicken Couscous", "Whole Grain Chicken Sandwich", 
-        "Baked Omelet with Potatoes", "Ricotta & Spinach Savory Pie"
-    ]
+    "EN": {
+        "title": "Weekly Menu",
+        "settings": "⚙️ Settings",
+        "lang_label": "Language / Lingua",
+        "persone": "People at the table",
+        "pizza_toggle": "Include Weekly Pizza",
+        "gen_btn": "🔄 GENERATE & SAVE",
+        "save_btn": "💾 SAVE CHANGES",
+        "sync_msg": "Synced!",
+        "pills_title": "📚 Nutritional Pills",
+        "pills_content": """- **Pizza:** Counts as a heavy portion of carbs + protein + fats. Eat it **once a week**.
+- **One-Pot Meals:** Pasta & beans or big salads are great substitutes.
+- **Golden Rule:** Always add extra vegetables for fiber and satiety.
+- **The Fake Friend:** Watch out for beer or soda with pizza; they unbalance the meal.""",
+        "guide_title": "⚖️ Recommended Portions",
+        "guide_content": """**Standard Portions (Adult):**
+* **Cereals:** 80g / **Bread:** 50g
+* **White Meat:** 120g / **Fish:** 150g
+* **Legumes:** 150g (cooked) / **Eggs:** 2
+* **Cheese:** 50-100g / **Vegetables:** 200g""",
+        "stats_title": "📊 Weekly Frequencies",
+        "shop_title": "🛒 Shopping List",
+        "shop_calc": "Automatically calculated for",
+        "persona": "person",
+        "persone_plur": "people",
+        "days": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+        "prot_label": "Protein Source",
+        "carb_label": "Carbohydrate",
+        "veg_label": "Vegetables",
+        "sugg_label": "ℹ️ Suggestions & Grams",
+        "single_label": "Single Portion",
+        "total_label": "Total for",
+        "included": "Included",
+        "pizza_tip": "🍕 Tip: Whole dough + side of fennel/salad.",
+        "swap": "↔️ SWAP",
+        "confirm": "✅ CONFIRM",
+        "cancel": "🚫 CANCEL",
+        "lock": "Lock"
+    }
 }
 
 ALL_VEG = sorted(list(set([v for sublist in CONFIG["VEG_SEASONAL"].values() for v in sublist])))
@@ -104,42 +180,39 @@ def generate_new_menu(use_pizza=True):
     return meals
 
 # --- 4. UI COMPONENTS ---
-def render_meal_card(idx, num_people):
+def render_meal_card(idx, num_people, L):
     meal = st.session_state.meals[idx]
     is_swapping = (st.session_state.swap_idx == idx)
     
     with st.container(border=True):
         st.markdown(f"**{'☀️' if meal['type'] == 'Lunch' else '🌙'} {meal['type']}**")
         
-        # Selectors
         prot_options = list(CONFIG["EMOJI_PROT"].keys())
-        new_p = st.selectbox("Protein Source", prot_options, index=prot_options.index(meal['prot']), key=f"p_{idx}_{st.session_state.sync_key}")
+        new_p = st.selectbox(L["prot_label"], prot_options, index=prot_options.index(meal['prot']), key=f"p_{idx}_{st.session_state.sync_key}")
         
         if new_p in ['Pizza', 'One-Pot Meal']:
             new_c = "Included"
-            if new_p == 'Pizza': st.warning("🍕 Tip: Whole dough + side of fennel/salad.")
-            else: st.info(f"🍲 Example: {CONFIG['ONE_POT_EXAMPLES'][idx % len(CONFIG['ONE_POT_EXAMPLES'])]}")
+            if new_p == 'Pizza': st.warning(L["pizza_tip"])
         else:
             c_opts = CONFIG["ALL_CARBO"]
             curr_c = meal['carbo'] if meal['carbo'] in c_opts else c_opts[0]
-            new_c = st.selectbox("Carb", c_opts, index=c_opts.index(curr_c), key=f"c_{idx}_{st.session_state.sync_key}")
+            new_c = st.selectbox(L["carb_label"], c_opts, index=c_opts.index(curr_c), key=f"c_{idx}_{st.session_state.sync_key}")
         
-        new_v = st.selectbox("Vegetables", ALL_VEG, index=ALL_VEG.index(meal['veg']), key=f"v_{idx}_{st.session_state.sync_key}")
+        new_v = st.selectbox(L["veg_label"], ALL_VEG, index=ALL_VEG.index(meal['veg']), key=f"v_{idx}_{st.session_state.sync_key}")
 
-        # SUGGESTIONS BOX
-        with st.expander("ℹ️ Suggestions & Recommended Grams"):
+        with st.expander(L["sugg_label"]):
             ref_p = CONFIG["PORTIONS_GRAMS"].get(new_p, 0)
             ref_c = CONFIG["PORTIONS_GRAMS"].get(new_c, 0) if new_c != "Included" else 0
             ref_v = CONFIG["PORTIONS_GRAMS"].get("Vegetables", 200)
             
             col_a, col_b = st.columns(2)
             with col_a:
-                st.markdown("**Singola Porzione:**")
-                st.caption(f"- Proteina: {ref_p}g/pz")
-                if new_c != "Included": st.caption(f"- Carboidrato: {ref_c}g")
-                st.caption(f"- Verdura: {ref_v}g")
+                st.markdown(f"**{L['single_label']}:**")
+                st.caption(f"- {new_p}: {ref_p}g/pz")
+                if new_c != "Included": st.caption(f"- {new_c}: {ref_c}g")
+                st.caption(f"- {L['veg_label']}: {ref_v}g")
             with col_b:
-                st.markdown(f"**Per {num_people} {'Persona' if num_people == 1 else 'Persone'}:**")
+                st.markdown(f"**{L['total_label']} {num_people}:**")
                 st.write(f"- {ref_p * num_people}g/pz")
                 if new_c != "Included": st.write(f"- {ref_c * num_people}g")
                 st.write(f"- {ref_v * num_people}g")
@@ -147,10 +220,9 @@ def render_meal_card(idx, num_people):
         if new_p != meal['prot'] or new_c != meal['carbo'] or new_v != meal['veg']:
             st.session_state.meals[idx].update({"prot": new_p, "carbo": new_c, "veg": new_v})
 
-        # Actions
         c1, c2 = st.columns(2)
-        meal['locked'] = c1.checkbox("Lock", value=meal['locked'], key=f"l_{idx}_{st.session_state.sync_key}")
-        btn_label = "✅ CONFIRM" if (st.session_state.swap_idx is not None and not is_swapping) else "↔️ SWAP"
+        meal['locked'] = c1.checkbox(L["lock"], value=meal['locked'], key=f"l_{idx}_{st.session_state.sync_key}")
+        btn_label = L["confirm"] if (st.session_state.swap_idx is not None and not is_swapping) else L["swap"]
         
         if c2.button(btn_label, key=f"btn_{idx}_{st.session_state.sync_key}", use_container_width=True):
             if st.session_state.swap_idx is None: st.session_state.swap_idx = idx
@@ -169,60 +241,45 @@ def main():
     if 'sync_key' not in st.session_state: st.session_state.sync_key = str(uuid.uuid4())
     if 'swap_idx' not in st.session_state: st.session_state.swap_idx = None
 
+    # --- SIDEBAR & LANGUAGE CHOICE ---
     with st.sidebar:
-        st.header("⚙️ Impostazioni")
+        lang_choice = st.radio("Language / Lingua", ["IT", "EN"], horizontal=True)
+        L = TRANSLATIONS[lang_choice] # Get the current translation dictionary
+        
+        st.header(L["settings"])
         username = st.text_input("Username", value="guest_user")
-        num_persone_sidebar = st.number_input("Persone a tavola", 1, 10, 1)
-        use_pizza = st.toggle("Includi Pizza Settimanale", value=True)
+        num_persone = st.number_input(L["persone"], 1, 10, 1)
+        use_pizza = st.toggle(L["pizza_toggle"], value=True)
         
         st.divider()
-        if st.button("🔄 GENERA E SALVA", use_container_width=True):
+        if st.button(L["gen_btn"], use_container_width=True):
             st.session_state.meals = generate_new_menu(use_pizza)
             save_menu_to_db(username, st.session_state.meals)
             st.rerun()
         
-        if st.button("💾 SALVA MODIFICHE", use_container_width=True):
+        if st.button(L["save_btn"], use_container_width=True):
             save_menu_to_db(username, st.session_state.meals)
-            st.success("Sincronizzato!")
+            st.success(L["sync_msg"])
 
-    # Load data
     if 'meals' not in st.session_state:
         db_data = load_menu_from_db(username)
         st.session_state.meals = db_data if db_data else generate_new_menu(use_pizza)
 
-    st.title(f"🥗 Menù Settimanale: {username}")
+    st.title(f"🥗 {L['title']}: {username}")
 
     # --- SECTION: PILLS & GUIDELINES ---
     col_pill1, col_pill2 = st.columns(2)
-    
     with col_pill1:
-        with st.expander("📚 Pillole di Educazione Alimentare"):
-            st.markdown("""
-            - **La Pizza:** Equivale a una porzione abbondante di carboidrati + proteine + grassi. Consumala **1 volta a settimana**.
-            - **Piatti Unici:** Pasta e fagioli o insalatone sono sostituti validi. 
-            - **Regola d'oro:** Accompagna sempre con verdura extra per garantire fibre e sazietà.
-            - **Il Falso Amico:** Attenzione a birra o bibite con la pizza; sbilanciano il pasto.
-            """)
-            
+        with st.expander(L["pills_title"]):
+            st.markdown(L["pills_content"])
     with col_pill2:
-        with st.expander("⚖️ Grammature Consigliate (Linee Guida)"):
-            st.markdown("""
-            **Porzioni standard per un adulto sano:**
-            * **Pasta/Riso/Cereali:** 80g
-            * **Pane:** 50g
-            * **Carne Bianca:** 100-120g
-            * **Pesce:** 150g
-            * **Legumi secchi:** 50g (o 150g cotti)
-            * **Uova:** 2 unità
-            * **Formaggio:** 50-100g (a seconda della stagionatura)
-            * **Verdura:** almeno 200g
-            """)
+        with st.expander(L["guide_title"]):
+            st.markdown(L["guide_content"])
 
-    # --- 📊 FREQUENZE SETTIMANALI ---
-    st.subheader("📊 Frequenze Settimanali")
+    # --- 📊 STATISTICS ---
+    st.subheader(L["stats_title"])
     all_prots = [m['prot'] for m in st.session_state.meals]
     cols = st.columns(len(CONFIG["EMOJI_PROT"]))
-    
     adj_targets = CONFIG["TARGET_PROT"].copy()
     if use_pizza: adj_targets["Pizza"] = 1
     else: adj_targets["Legumes"] += 1
@@ -230,33 +287,26 @@ def main():
     for i, (name, target) in enumerate(adj_targets.items()):
         current = all_prots.count(name)
         emoji = CONFIG["EMOJI_PROT"][name]
-        
-        if current == target:
-            color, arrow, label = "normal", "off", f"↕ Target: {target}"
-        elif current > target: 
-            color, arrow, label = "inverse", "up", f"Target: {target}"
-        else: 
-            color, arrow, label = "off", "down", f"Target: {target}"
-        
+        color, arrow, label = ("normal", "off", f"↕ Target: {target}") if current == target else \
+                            ("inverse", "up", f"Target: {target}") if current > target else \
+                            ("off", "down", f"Target: {target}")
         cols[i].metric(label=f"{emoji} {name}", value=f"{current}", delta=label, delta_color=color, delta_arrow=arrow)
 
-    # --- 📅 GRID RENDERING ---
-    days = ["Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato", "Domenica"]
-    for i, day in enumerate(days):
-        with st.expander(f"📅 {day.upper()}"):
+    # --- 📅 GRID ---
+    for i, day_name in enumerate(L["days"]):
+        with st.expander(f"📅 {day_name.upper()}"):
             l, r = st.columns(2)
-            with l: render_meal_card(i*2, num_persone_sidebar)
-            with r: render_meal_card(i*2 + 1, num_persone_sidebar)
+            with l: render_meal_card(i*2, num_persone, L)
+            with r: render_meal_card(i*2 + 1, num_persone, L)
 
     # --- 🛒 SHOPPING LIST ---
     st.divider()
-    
-    # Intestazione Stilizzata
+    pers_label = L["persona"] if num_persone == 1 else L["persone_plur"]
     st.markdown(f"""
         <div style="background-color: #f0f2f6; padding: 20px; border-radius: 10px; border-left: 5px solid #ff4b4b; margin-bottom: 20px;">
-            <h2 style="margin: 0; color: #31333f;">🛒 Lista della Spesa</h2>
+            <h2 style="margin: 0; color: #31333f;">{L['shop_title']}</h2>
             <p style="margin: 0; color: #555; font-weight: bold;">
-                Calcolata automaticamente per <span style="color: #ff4b4b;">{num_persone_sidebar} {'persona' if num_persone_sidebar == 1 else 'persone'}</span>
+                {L['shop_calc']} <span style="color: #ff4b4b;">{num_persone} {pers_label}</span>
             </p>
         </div>
     """, unsafe_allow_html=True)
@@ -266,22 +316,16 @@ def main():
         for item in [m['prot'], m['carbo'], m['veg']]:
             if item == "Included": continue
             key = "Vegetables" if item in ALL_VEG else item
-            qty = CONFIG["PORTIONS_GRAMS"].get(key, 0) * num_persone_sidebar
+            qty = CONFIG["PORTIONS_GRAMS"].get(key, 0) * num_persone
             shop_list[key] = shop_list.get(key, 0) + qty
 
     s_col1, s_col2 = st.columns(2)
     items = list(shop_list.items())
     half = (len(items) + 1) // 2
-    
     for i, (name, total) in enumerate(items):
         target_col = s_col1 if i < half else s_col2
         unit = "pz" if name in ["Eggs", "Pizza"] else "g"
-        # Mostriamo il totale in Kg se supera i 1000g per pulizia visiva
-        if unit == "g" and total >= 1000:
-            display_total = f"{total/1000:.2f} Kg"
-        else:
-            display_total = f"{total} {unit}"
-            
+        display_total = f"{total/1000:.2f} Kg" if (unit == "g" and total >= 1000) else f"{total} {unit}"
         target_col.write(f"- **{name}**: {display_total}")
 
 if __name__ == "__main__":
