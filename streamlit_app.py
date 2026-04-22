@@ -17,37 +17,37 @@ DATA = {
         "Pizza": {"IT": "🍕 Pizza", "EN": "🍕 Pizza", "gr": 1, "unit": "pz", "target": 1},
         "One-Pot Meal": {"IT": "🍲 Piatto Unico", "EN": "🍲 One-Pot Meal", "gr": 150, "unit": "g", "target": 1}
     },
-    "CARBO": {
-        "Whole Grain Pasta": {"IT": "Pasta Integrale", "EN": "Whole Grain Pasta", "gr": 80},
-        "Brown Rice": {"IT": "Riso Integrale", "EN": "Brown Rice", "gr": 80},
-        "Spelt": {"IT": "Farro", "EN": "Spelt", "gr": 80},
-        "Barley": {"IT": "Orzo", "EN": "Barley", "gr": 80},
-        "Gnocchi": {"IT": "Gnocchi", "EN": "Gnocchi", "gr": 200},
-        "Whole Grain Bread": {"IT": "Pane Integrale", "EN": "Whole Grain Bread", "gr": 50},
-        "Potatoes": {"IT": "Patate", "EN": "Potatoes", "gr": 200},
-        "Whole Grain Couscous": {"IT": "Couscous Integrale", "EN": "Whole Grain Couscous", "gr": 80},
-        "Included": {"IT": "Incluso / Included", "EN": "Included", "gr": 0}
+"CARBO": {
+        "Whole Grain Pasta": {"IT": "🍝 Pasta Integrale", "EN": "🍝 Whole Grain Pasta", "gr": 80},
+        "Brown Rice": {"IT": "🍚 Riso Integrale", "EN": "🍚 Brown Rice", "gr": 80},
+        "Spelt": {"IT": "🌾 Farro", "EN": "🌾 Spelt", "gr": 80},
+        "Barley": {"IT": "🌾 Orzo", "EN": "🌾 Barley", "gr": 80},
+        "Gnocchi": {"IT": "🥟 Gnocchi", "EN": "🥟 Gnocchi", "gr": 200},
+        "Whole Grain Bread": {"IT": "🍞 Pane Integrale", "EN": "🍞 Whole Grain Bread", "gr": 50},
+        "Potatoes": {"IT": "🥔 Patate", "EN": "🥔 Potatoes", "gr": 200},
+        "Whole Grain Couscous": {"IT": "🥣 Couscous Integrale", "EN": "🥣 Whole Grain Couscous", "gr": 80},
+        "Included": {"IT": "🥡 Incluso", "EN": "🥡 Included", "gr": 0}
     },
     "VEG": {
-        "Broccoli": {"IT": "Broccoli", "EN": "Broccoli"},
-        "Cauliflower": {"IT": "Cavolfiore", "EN": "Cauliflower"},
-        "Fennel": {"IT": "Finocchi", "EN": "Fennel"},
-        "Spinach": {"IT": "Spinaci", "EN": "Spinach"},
-        "Chard": {"IT": "Bietole", "EN": "Chard"},
-        "Artichokes": {"IT": "Carciofi", "EN": "Artichokes"},
-        "Pumpkin": {"IT": "Zucca", "EN": "Pumpkin"},
-        "Asparagus": {"IT": "Asparagi", "EN": "Asparagus"},
-        "Peas": {"IT": "Piselli", "EN": "Peas"},
-        "Broad Beans": {"IT": "Fave", "EN": "Broad Beans"},
-        "Zucchini": {"IT": "Zucchine", "EN": "Zucchini"},
-        "Salad": {"IT": "Insalata", "EN": "Salad"},
-        "Tomatoes": {"IT": "Pomodori", "EN": "Tomatoes"},
-        "Peppers": {"IT": "Peperoni", "EN": "Peppers"},
-        "Eggplants": {"IT": "Melanzane", "EN": "Eggplants"},
-        "Green Beans": {"IT": "Fagiolini", "EN": "Green Beans"},
-        "Cucumbers": {"IT": "Cetrioli", "EN": "Cucumbers"},
-        "Mushrooms": {"IT": "Funghi", "EN": "Mushrooms"},
-        "Carrots": {"IT": "Carote", "EN": "Carrots"}
+        "Broccoli": {"IT": "🥦 Broccoli", "EN": "🥦 Broccoli"},
+        "Cauliflower": {"IT": "🥦 Cavolfiore", "EN": "🥦 Cauliflower"},
+        "Fennel": {"IT": "🥗 Finocchi", "EN": "🥗 Fennel"},
+        "Spinach": {"IT": "🍃 Spinaci", "EN": "🍃 Spinach"},
+        "Chard": {"IT": "🍃 Bietole", "EN": "🍃 Chard"},
+        "Artichokes": {"IT": "🎍 Carciofi", "EN": "🎍 Artichokes"},
+        "Pumpkin": {"IT": "🎃 Zucca", "EN": "🎃 Pumpkin"},
+        "Asparagus": {"IT": "🎋 Asparagi", "EN": "🎋 Asparagus"},
+        "Peas": {"IT": "🫛 Piselli", "EN": "🫛 Peas"},
+        "Broad Beans": {"IT": "🫛 Fave", "EN": "🫛 Broad Beans"},
+        "Zucchini": {"IT": "🥒 Zucchine", "EN": "🥒 Zucchini"},
+        "Salad": {"IT": "🥬 Insalata", "EN": "🥬 Salad"},
+        "Tomatoes": {"IT": "🍅 Pomodori", "EN": "🍅 Tomatoes"},
+        "Peppers": {"IT": "🫑 Peperoni", "EN": "🫑 Peppers"},
+        "Eggplants": {"IT": "🍆 Melanzane", "EN": "🍆 Eggplants"},
+        "Green Beans": {"IT": "🥗 Fagiolini", "EN": "🥗 Green Beans"},
+        "Cucumbers": {"IT": "🥒 Cetrioli", "EN": "🥒 Cucumbers"},
+        "Mushrooms": {"IT": "🍄 Funghi", "EN": "🍄 Mushrooms"},
+        "Carrot": {"IT": "🥕 Carote", "EN": "🥕 Carrots"}
     }
 }
 
@@ -141,7 +141,7 @@ def generate_menu(pizza_on, current_meals=None):
                 if p_type in targets and targets[p_type] > 0:
                     targets[p_type] -= 1
     
-    for k, v in targets.items(): pool.extend([k] * v)    
+    for k, v in targets.items(): pool.extend([k] * v)
     random.shuffle(pool)
     
     meals = []
@@ -156,6 +156,25 @@ def generate_menu(pizza_on, current_meals=None):
             else: c = random.choice(["Whole Grain Pasta", "Brown Rice", "Spelt", "Barley", "Gnocchi"] if is_lunch else ["Whole Grain Bread", "Potatoes", "Whole Grain Couscous"])
             meals.append({"type": "Lunch" if is_lunch else "Dinner", "prot": p, "carbo": c, "veg": random.choice(veg_keys), "locked": False})
     return meals
+
+def update_meal(idx):
+    # Recupera i valori dai widget usando le chiavi temporanee
+    v_key = st.session_state.menu_version
+    new_p = st.session_state[f"p{idx}_{v_key}"]
+    new_v = st.session_state[f"v{idx}_{v_key}"]
+    
+    # Se non è pizza/piatto unico, prendi il carbo, altrimenti "Included"
+    if new_p in ["Pizza", "One-Pot Meal"]:
+        new_c = "Included"
+    else:
+        new_c = st.session_state[f"c{idx}_{v_key}"]
+    
+    # Aggiorna lo stato ufficiale
+    st.session_state.meals[idx].update({
+        "prot": new_p, 
+        "carbo": new_c, 
+        "veg": new_v
+    })
 
 # --- 4. APP ---
 def main():
@@ -233,7 +252,15 @@ def main():
                         st.write(f"**{T['lunch' if j==0 else 'dinner']}**")
 
                     # Selettori
-                    new_p = st.selectbox(T["prot"], list(DATA["PROT"].keys()), index=list(DATA["PROT"].keys()).index(m["prot"]), format_func=lambda x: DATA["PROT"][x][st.session_state.lang], key=f"p{idx}_{v_key}")
+                    new_p = st.selectbox(
+                        T["prot"], 
+                        list(DATA["PROT"].keys()), 
+                        index=list(DATA["PROT"].keys()).index(m["prot"]), 
+                        format_func=lambda x: DATA["PROT"][x][st.session_state.lang], 
+                        key=f"p{idx}_{v_key}",
+                        on_change=update_meal,
+                        args=(idx,)
+                    )
                     
                     if new_p in ["Pizza", "One-Pot Meal"]:
                         new_c = "Included"
@@ -241,10 +268,23 @@ def main():
                     else:
                         c_opts = [ck for ck in DATA["CARBO"].keys() if ck != "Included"]
                         c_idx = c_opts.index(m["carbo"]) if m["carbo"] in c_opts else 0
-                        new_c = st.selectbox(T["carb"], c_opts, index=c_idx if m["carbo"] in c_opts else 0, format_func=lambda x: DATA["CARBO"][x][st.session_state.lang], key=f"c{idx}_{v_key}")
+                        new_c = st.selectbox(T["carb"], 
+                                             c_opts, 
+                                             index=c_idx if m["carbo"] in c_opts else 0, 
+                                             format_func=lambda x: DATA["CARBO"][x][st.session_state.lang], 
+                                             key=f"c{idx}_{v_key}",
+                                             on_change=update_meal,
+                                             args=(idx,)
+                                            )
                     
-                    new_v = st.selectbox(T["veg"], list(DATA["VEG"].keys()), index=list(DATA["VEG"].keys()).index(m["veg"]), format_func=lambda x: DATA["VEG"][x][st.session_state.lang], key=f"v{idx}_{v_key}")
-                    st.session_state.meals[idx].update({"prot": new_p, "carbo": new_c, "veg": new_v})
+                    new_v = st.selectbox(T["veg"], 
+                                         list(DATA["VEG"].keys()), 
+                                         index=list(DATA["VEG"].keys()).index(m["veg"]), 
+                                         format_func=lambda x: DATA["VEG"][x][st.session_state.lang], 
+                                         key=f"v{idx}_{v_key}",
+                                         on_change=update_meal,
+                                         args=(idx,)
+                                        )
 
                     # Grammi dinamici
                     with st.expander(T["sugg"]):
