@@ -98,7 +98,6 @@ def load_user_data(username):
         res_prof = conn.table("profiles").select("*").eq("username", username).execute()
 
         if not res_prof.data or len(res_prof.data) == 0:
-            st.sidebar.warning("UTENTE NON TROVATO!")
             return None, None
 
         profile = res_prof.data[0]
@@ -238,7 +237,8 @@ def main():
                             "veg": m["veg"],
                             "locked": m["locked"]
                         })
-                    st.session_state.menu_version += 1 
+                    st.session_state.menu_version += 1
+                    st.success(f"T['welcomeback'] {user_input}!")
                     st.rerun()
                 else:
                     # st.write("Esito: Profilo NON trovato")
@@ -246,8 +246,6 @@ def main():
                     st.sidebar.warning("UTENTE NON TROVATO")
                     st.stop()
                     #st.toast(st.session_state.load_error, icon="❌")
-
-        st.success(f"T['welcomeback'] {user_input}!")
                 
         n_people = st.number_input(T["people"], 1, 10, value=st.session_state.n_people)
         st.session_state.n_people = n_people # Sync
