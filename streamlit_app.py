@@ -54,7 +54,7 @@ DATA = {
 UI_TEXT = {
     "IT": {
         "title": "Menù Settimanale", "settings": "⚙️ Impostazioni", "people": "Persone a tavola",
-        "pizza_toggle": "Includi Pizza Settimanale", "gen": "🔄 GENERA E SALVA", "save": "💾 SALVA MODIFICHE",
+        "pizza_toggle": "Includi Pizza Settimanale", "gen": "🔄 GENERA", "save": "💾 SALVA MODIFICHE",
         "sync": "Sincronizzato!", "pills": "📚 Pillole di Educazione Alimentare",
         "pills_txt": "- **Pizza:** 1 volta a settimana.\n- **Piatto Unico:** Pasta e fagioli, insalatone.\n- **Regola:** Sempre con verdura extra.",
         "guide": "⚖️ Grammature Consigliate",
@@ -69,7 +69,7 @@ UI_TEXT = {
     },
     "EN": {
         "title": "Weekly Menu", "settings": "⚙️ Settings", "people": "People at the table",
-        "pizza_toggle": "Include Weekly Pizza", "gen": "🔄 GENERATE & SAVE", "save": "💾 SAVE CHANGES",
+        "pizza_toggle": "Include Weekly Pizza", "gen": "🔄 GENERATE", "save": "💾 SAVE CHANGES",
         "sync": "Synced!", "pills": "📚 Nutritional Pills",
         "pills_txt": "- **Pizza:** Once a week.\n- **One-Pot Meal:** Pasta & beans, big salads.\n- **Rule:** Always add extra vegetables.",
         "guide": "⚖️ Portion Guidelines",
