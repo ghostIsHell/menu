@@ -98,6 +98,7 @@ def load_user_data(username):
         res_prof = conn.table("profiles").select("*").eq("username", username).execute()
 
         if not res_prof.data or len(res_prof.data) == 0:
+            st.sidebar.warning("UTENTE NON TROVATO!!!")
             return None, None
 
         profile = res_prof.data[0]
