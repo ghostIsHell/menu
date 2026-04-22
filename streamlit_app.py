@@ -167,7 +167,7 @@ def update_meal(idx):
     if new_p in ["Pizza", "One-Pot Meal"]:
         new_c = "Included"
     else:
-        new_c = st.session_state[f"c{idx}_{v_key}"]
+        new_c = st.session_state.get(f"c{idx}_{v_key}", st.session_state.meals[idx]["carbo"])
     
     # Aggiorna lo stato ufficiale
     st.session_state.meals[idx].update({
