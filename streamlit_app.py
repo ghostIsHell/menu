@@ -160,10 +160,12 @@ def main():
     st.set_page_config(page_title="Menu", layout="wide")
 
     if "lang" not in st.session_state: st.session_state.lang = "IT"
+
+    if "menu_version" not in st.session_state: st.session_state.menu_version = 0
     
     with st.sidebar:
-        lang = st.radio("Language", ["IT", "EN"], horizontal=True)
-        T = UI_TEXT[lang]
+        st.session_state.lang = st.radio("Language", ["IT", "EN"], horizontal=True)
+        T = UI_TEXT[st.session_state.lang]
         st.header(T["settings"])
         
         user = st.text_input("User", "guest")
@@ -173,7 +175,9 @@ def main():
             current = st.session_state.get("meals")
             st.session_state.meals = generate_menu(piz, current)
             st.session_state.swap_idx = None
+            st.session_state.menu_version += 1
             st.rerun()
+            
         if st.button(T["save"], use_container_width=True):
             save_db(user, st.session_state.meals, T["menu_saved"])
 
@@ -203,7 +207,7 @@ def main():
         color = "normal" if current == target else "inverse" if current > target else "off"
         arrow = "off" if current == target else "up" if current > target else "down"
         
-        cols[i].metric(label=v[lang], value=current, delta=f"{T['target_label']}: {target}", delta_color=color, delta_arrow=arrow)
+        cols[i].metric(label=v[st.session_state.lang], value=current, delta=f"{T['target_label']}: {target}", delta_color=color, delta_arrow=arrow)
 
     # --- GRID ---
     for i, day_name in enumerate(T["days"]):
@@ -212,18 +216,22 @@ def main():
             for j in range(2):
                 idx = i*2 + j
                 m = st.session_state.meals[idx]
+
+                v_key = st.session_state.menu_version
+                
                 with cols[j].container(border=True):
                     st.write(f"**{T['lunch' if j==0 else 'dinner']}**")
-                    new_p = st.selectbox(T["prot"], list(DATA["PROT"].keys()), index=list(DATA["PROT"].keys()).index(m["prot"]), format_func=lambda x: DATA["PROT"][x][lang], key=f"p{idx}")
+                    new_p = st.selectbox(T["prot"], list(DATA["PROT"].keys()), index=list(DATA["PROT"].keys()).index(m["prot"]), format_func=lambda x: DATA["PROT"][x][st.session_state.lang], key=f"p{idx}_{v_key}")
                     
                     if new_p in ["Pizza", "One-Pot Meal"]:
                         new_c = "Included"
                         if new_p == "Pizza": st.warning(T["pizza_tip"])
                     else:
                         c_opts = [ck for ck in DATA["CARBO"].keys() if ck != "Included"]
-                        new_c = st.selectbox(T["carb"], c_opts, index=c_opts.index(m["carbo"]) if m["carbo"] in c_opts else 0, format_func=lambda x: DATA["CARBO"][x][lang], key=f"c{idx}")
+                        c_idx = c_opts.index(m["carbo"]) if m["carbo"] in c_opts else 0
+                        new_c = st.selectbox(T["carb"], c_opts, index=c_idx if m["carbo"] in c_opts else 0, format_func=lambda x: DATA["CARBO"][x][st.session_state.lang], key=f"c{idx}_{v_key}")
                     
-                    new_v = st.selectbox(T["veg"], list(DATA["VEG"].keys()), index=list(DATA["VEG"].keys()).index(m["veg"]), format_func=lambda x: DATA["VEG"][x][lang], key=f"v{idx}")
+                    new_v = st.selectbox(T["veg"], list(DATA["VEG"].keys()), index=list(DATA["VEG"].keys()).index(m["veg"]), format_func=lambda x: DATA["VEG"][x][st.session_state.lang], key=f"v{idx}_{v_key}")
                     st.session_state.meals[idx].update({"prot": new_p, "carbo": new_c, "veg": new_v})
 
                     # Grammi dinamici
@@ -231,8 +239,8 @@ def main():
                         g_p, g_c = DATA["PROT"][new_p]["gr"], DATA["CARBO"][new_c]["gr"]
                         u_p = "pz" if DATA["PROT"][new_p]["unit"] == "pz" else "g"
                         st.write(f"**{T['total']} {n_p}:**")
-                        st.write(f"- {DATA['PROT'][new_p][lang]}: {g_p * n_p} {u_p}")
-                        if g_c > 0: st.write(f"- {DATA['CARBO'][new_c][lang]}: {g_c * n_p} g")
+                        st.write(f"- {DATA['PROT'][new_p][st.session_state.lang]}: {g_p * n_p} {u_p}")
+                        if g_c > 0: st.write(f"- {DATA['CARBO'][new_c][st.session_state.lang]}: {g_c * n_p} g")
                         st.write(f"- {T['veg']}: {200 * n_p} g")
 
                     # Swap & Lock
@@ -254,15 +262,15 @@ def main():
     for m in st.session_state.meals:
         # Prot
         p_info = DATA["PROT"][m["prot"]]
-        basket[p_info[lang]] = basket.get(p_info[lang], {"q": 0, "u": p_info["unit"]})
-        basket[p_info[lang]]["q"] += p_info["gr"] * n_p
+        basket[p_info[st.session_state.lang]] = basket.get(p_info[st.session_state.lang], {"q": 0, "u": p_info["unit"]})
+        basket[p_info[st.session_state.lang]]["q"] += p_info["gr"] * n_p
         # Carbo
         if m["carbo"] != "Included":
             c_info = DATA["CARBO"][m["carbo"]]
-            basket[c_info[lang]] = basket.get(c_info[lang], {"q": 0, "u": "g"})
-            basket[c_info[lang]]["q"] += c_info["gr"] * n_p
+            basket[c_info[st.session_state.lang]] = basket.get(c_info[st.session_state.lang], {"q": 0, "u": "g"})
+            basket[c_info[st.session_state.lang]]["q"] += c_info["gr"] * n_p
         # Veg
-        v_name = DATA["VEG"][m["veg"]][lang]
+        v_name = DATA["VEG"][m["veg"]][st.session_state.lang]
         basket[v_name] = basket.get(v_name, {"q": 0, "u": "g"})
         basket[v_name]["q"] += 200 * n_p
 
