@@ -5,17 +5,17 @@ import uuid
 from datetime import datetime
 from st_supabase_connection import SupabaseConnection
 
-# --- 1. DIZIONARIO DATI E TRADUZIONI (TUTTO BILINGUE) ---
+# --- 1. CONFIGURAZIONE E TRADUZIONI ---
 DATA = {
     "PROT": {
-        "Legumes": {"IT": "🟢 Legumi", "EN": "🟢 Legumes", "gr": 150, "unit": "g"},
-        "Fish": {"IT": "🔵 Pesce", "EN": "🔵 Fish", "gr": 150, "unit": "g"},
-        "White Meat": {"IT": "⚪ Carne Bianca", "EN": "⚪ White Meat", "gr": 120, "unit": "g"},
-        "Eggs": {"IT": "🟣 Uova", "EN": "🟣 Eggs", "gr": 2, "unit": "pz"},
-        "Cheese": {"IT": "🟡 Formaggio", "EN": "🟡 Cheese", "gr": 100, "unit": "g"},
-        "Red Meat": {"IT": "🔴 Carne Rossa", "EN": "🔴 Red Meat", "gr": 100, "unit": "g"},
-        "Pizza": {"IT": "🍕 Pizza", "EN": "🍕 Pizza", "gr": 1, "unit": "pz"},
-        "One-Pot Meal": {"IT": "🍲 Piatto Unico", "EN": "🍲 One-Pot Meal", "gr": 150, "unit": "g"}
+        "Legumes": {"IT": "🟢 Legumi", "EN": "🟢 Legumes", "gr": 150, "unit": "g", "target": 3},
+        "Fish": {"IT": "🔵 Pesce", "EN": "🔵 Fish", "gr": 150, "unit": "g", "target": 3},
+        "White Meat": {"IT": "⚪ Carne Bianca", "EN": "⚪ White Meat", "gr": 120, "unit": "g", "target": 2},
+        "Eggs": {"IT": "🟣 Uova", "EN": "🟣 Eggs", "gr": 2, "unit": "pz", "target": 3},
+        "Cheese": {"IT": "🟡 Formaggio", "EN": "🟡 Cheese", "gr": 100, "unit": "g", "target": 1},
+        "Red Meat": {"IT": "🔴 Carne Rossa", "EN": "🔴 Red Meat", "gr": 100, "unit": "g", "target": 1},
+        "Pizza": {"IT": "🍕 Pizza", "EN": "🍕 Pizza", "gr": 1, "unit": "pz", "target": 1},
+        "One-Pot Meal": {"IT": "🍲 Piatto Unico", "EN": "🍲 One-Pot Meal", "gr": 150, "unit": "g", "target": 1}
     },
     "CARBO": {
         "Whole Grain Pasta": {"IT": "Pasta Integrale", "EN": "Whole Grain Pasta", "gr": 80},
@@ -26,7 +26,7 @@ DATA = {
         "Whole Grain Bread": {"IT": "Pane Integrale", "EN": "Whole Grain Bread", "gr": 50},
         "Potatoes": {"IT": "Patate", "EN": "Potatoes", "gr": 200},
         "Whole Grain Couscous": {"IT": "Couscous Integrale", "EN": "Whole Grain Couscous", "gr": 80},
-        "Included": {"IT": "Incluso nel piatto", "EN": "Included in meal", "gr": 0}
+        "Included": {"IT": "Incluso / Included", "EN": "Included", "gr": 0}
     },
     "VEG": {
         "Broccoli": {"IT": "Broccoli", "EN": "Broccoli"},
@@ -42,7 +42,7 @@ DATA = {
         "Zucchini": {"IT": "Zucchine", "EN": "Zucchini"},
         "Salad": {"IT": "Insalata", "EN": "Salad"},
         "Tomatoes": {"IT": "Pomodori", "EN": "Tomatoes"},
-        "Peppers": {"IT": "Peperoni", "EN": "Peperoni"},
+        "Peppers": {"IT": "Peperoni", "EN": "Peppers"},
         "Eggplants": {"IT": "Melanzane", "EN": "Eggplants"},
         "Green Beans": {"IT": "Fagiolini", "EN": "Green Beans"},
         "Cucumbers": {"IT": "Cetrioli", "EN": "Cucumbers"},
@@ -53,36 +53,34 @@ DATA = {
 
 UI_TEXT = {
     "IT": {
-        "title": "Menù Settimanale", "settings": "⚙️ Impostazioni", "user": "Nome Utente",
-        "people": "Persone a tavola", "pizza_toggle": "Includi Pizza Settimanale",
-        "gen_btn": "🔄 GENERA E SALVA", "save_btn": "💾 SALVA MODIFICHE", "sync": "Sincronizzato!",
-        "pills_title": "📚 Pillole di Educazione Alimentare",
-        "pills_txt": "- **Pizza:** 1 volta a settimana.\n- **Piatto Unico:** Pasta e fagioli, insalatone.\n- **Regola:** Sempre con verdura extra.\n- **Falso Amico:** Attenzione a bibite e dolci.",
-        "guide_title": "⚖️ Grammature Consigliate",
-        "guide_txt": "* **Cereali:** 80g\n* **Pane:** 50g\n* **Carne Bianca:** 120g\n* **Pesce:** 150g\n* **Verdura:** 200g",
-        "freq_title": "📊 Frequenze Settimanali", "shop_title": "🛒 Lista della Spesa",
+        "title": "Menù Settimanale", "settings": "⚙️ Impostazioni", "people": "Persone a tavola",
+        "pizza_toggle": "Includi Pizza Settimanale", "gen": "🔄 GENERA E SALVA", "save": "💾 SALVA MODIFICHE",
+        "sync": "Sincronizzato!", "pills": "📚 Pillole di Educazione Alimentare",
+        "pills_txt": "- **Pizza:** 1 volta a settimana.\n- **Piatto Unico:** Pasta e fagioli, insalatone.\n- **Regola:** Sempre con verdura extra.",
+        "guide": "⚖️ Grammature Consigliate",
+        "guide_txt": "* **Cereali:** 80g\n* **Carne:** 120g\n* **Pesce:** 150g\n* **Verdura:** 200g",
+        "freq": "📊 Frequenze Settimanali", "shop": "🛒 Lista della Spesa",
         "shop_calc": "Calcolata per", "days": ["Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato", "Domenica"],
         "lunch": "Pranzo", "dinner": "Cena", "prot": "Proteina", "carb": "Carboidrato", "veg": "Verdura",
-        "sugg": "ℹ️ Suggerimenti e Grammi", "single": "Singola Porzione", "total": "Totale per",
-        "swap": "↔️ SCAMBIA", "confirm": "✅ CONFERMA", "lock": "Blocca", "kg_label": "Kg", "unit_pz": "pz", "unit_g": "g"
+        "sugg": "ℹ️ Suggerimenti e Grammi", "single": "Porzione Singola", "total": "Totale per",
+        "swap": "↔️ SCAMBIA", "confirm": "✅ CONFERMA", "lock": "Blocca", "pizza_tip": "🍕 Tip: Impasto integrale + contorno di finocchi/insalata."
     },
     "EN": {
-        "title": "Weekly Menu", "settings": "⚙️ Settings", "user": "Username",
-        "people": "People at table", "pizza_toggle": "Include Weekly Pizza",
-        "gen_btn": "🔄 GENERATE & SAVE", "save_btn": "💾 SAVE CHANGES", "sync": "Synced!",
-        "pills_title": "📚 Nutritional Pills",
-        "pills_txt": "- **Pizza:** Once a week.\n- **One-Pot Meal:** Pasta & beans, big salads.\n- **Rule:** Always add extra vegetables.\n- **Fake Friend:** Watch out for sodas and sweets.",
-        "guide_title": "⚖️ Portion Guidelines",
-        "guide_txt": "* **Cereals:** 80g\n* **Bread:** 50g\n* **White Meat:** 120g\n* **Fish:** 150g\n* **Vegetables:** 200g",
-        "freq_title": "📊 Weekly Frequencies", "shop_title": "🛒 Shopping List",
+        "title": "Weekly Menu", "settings": "⚙️ Settings", "people": "People at the table",
+        "pizza_toggle": "Include Weekly Pizza", "gen": "🔄 GENERATE & SAVE", "save": "💾 SAVE CHANGES",
+        "sync": "Synced!", "pills": "📚 Nutritional Pills",
+        "pills_txt": "- **Pizza:** Once a week.\n- **One-Pot Meal:** Pasta & beans, big salads.\n- **Rule:** Always add extra vegetables.",
+        "guide": "⚖️ Portion Guidelines",
+        "guide_txt": "* **Cereals:** 80g\n* **Meat:** 120g\n* **Fish:** 150g\n* **Vegetables:** 200g",
+        "freq": "📊 Weekly Frequencies", "shop": "🛒 Shopping List",
         "shop_calc": "Calculated for", "days": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
         "lunch": "Lunch", "dinner": "Dinner", "prot": "Protein", "carb": "Carbohydrate", "veg": "Vegetables",
         "sugg": "ℹ️ Suggestions & Grams", "single": "Single Portion", "total": "Total for",
-        "swap": "↔️ SWAP", "confirm": "✅ CONFIRM", "lock": "Lock", "kg_label": "Kg", "unit_pz": "pcs", "unit_g": "g"
+        "swap": "↔️ SWAP", "confirm": "✅ CONFIRM", "lock": "Lock", "pizza_tip": "🍕 Tip: Whole dough + side of fennel/salad."
     }
 }
 
-# --- 2. DATABASE HELPERS ---
+# --- 2. DATABASE ---
 conn = st.connection("supabase", type=SupabaseConnection, 
                     url=st.secrets["connections"]["supabase"]["url"], 
                     key=st.secrets["connections"]["supabase"]["key"])
@@ -93,178 +91,140 @@ def load_db(user):
 
 def save_db(user, meals):
     conn.table("user_dinner").delete().eq("user_id", user).execute()
-    data_to_save = []
-    for i, m in enumerate(meals):
-        data_to_save.append({
-            "user_id": user, "day_idx": i // 2, "type": m["type"],
-            "prot": m["prot"], "carbo": m["carbo"], "veg": m["veg"], "locked": m["locked"]
-        })
-    conn.table("user_dinner").insert(data_to_save).execute()
+    conn.table("user_dinner").insert([{"user_id": user, "day_idx": i//2, "type": m["type"], "prot": m["prot"], "carbo": m["carbo"], "veg": m["veg"], "locked": m["locked"]} for i, m in enumerate(meals)]).execute()
 
-# --- 3. GENERATION LOGIC ---
-def generate_new_menu(pizza_on):
+# --- 3. LOGICA GENERAZIONE ---
+def generate_menu(pizza_on):
     pool = []
-    targets = {"Legumes": 3 if pizza_on else 4, "Fish": 3, "White Meat": 2, "Eggs": 3, "Cheese": 1, "Red Meat": 1, "One-Pot Meal": 1, "Pizza": 1 if pizza_on else 0}
+    targets = {k: v["target"] for k, v in DATA["PROT"].items()}
+    if not pizza_on:
+        targets["Pizza"] = 0
+        targets["Legumes"] += 1
     for k, v in targets.items(): pool.extend([k] * v)
     random.shuffle(pool)
     
     meals = []
-    all_veg = list(DATA["VEG"].keys())
+    veg_keys = list(DATA["VEG"].keys())
     for i in range(14):
         p = pool.pop()
-        is_lunch = (i % 2 == 0)
-        if p in ["Pizza", "One-Pot Meal"]:
-            c = "Included"
-        else:
-            c = random.choice(["Whole Grain Pasta", "Brown Rice", "Spelt", "Barley", "Gnocchi"] if is_lunch else ["Whole Grain Bread", "Potatoes", "Whole Grain Couscous"])
-        meals.append({"type": "Lunch" if is_lunch else "Dinner", "prot": p, "carbo": c, "veg": random.choice(all_veg), "locked": False})
+        is_lunch = i % 2 == 0
+        if p in ["Pizza", "One-Pot Meal"]: c = "Included"
+        else: c = random.choice(["Whole Grain Pasta", "Brown Rice", "Spelt", "Barley", "Gnocchi"] if is_lunch else ["Whole Grain Bread", "Potatoes", "Whole Grain Couscous"])
+        meals.append({"type": "Lunch" if is_lunch else "Dinner", "prot": p, "carbo": c, "veg": random.choice(veg_keys), "locked": False})
     return meals
 
-# --- 4. MAIN APP ---
+# --- 4. APP ---
 def main():
-    st.set_page_config(page_title="HealthMenu AI", layout="wide")
-
-    # --- SIDEBAR & LANGUAGE ---
+    st.set_page_config(page_title="HealthMenu DB", layout="wide")
+    
     with st.sidebar:
         lang = st.radio("Language / Lingua", ["IT", "EN"], horizontal=True)
         T = UI_TEXT[lang]
         st.header(T["settings"])
-        user = st.text_input(T["user"], value="guest")
-        num_persone = st.number_input(T["people"], 1, 10, 1)
-        pizza_on = st.toggle(T["pizza_toggle"], value=True)
-        
-        st.divider()
-        if st.button(T["gen_btn"], use_container_width=True):
-            st.session_state.meals = generate_new_menu(pizza_on)
+        user = st.text_input("User", "guest")
+        n_p = st.number_input(T["people"], 1, 10, 1)
+        piz = st.toggle(T["pizza_toggle"], True)
+        if st.button(T["gen"], use_container_width=True):
+            st.session_state.meals = generate_menu(piz)
             save_db(user, st.session_state.meals)
             st.rerun()
-        if st.button(T["save_btn"], use_container_width=True):
+        if st.button(T["save"], use_container_width=True):
             save_db(user, st.session_state.meals)
             st.success(T["sync"])
 
-    # Load initial state
     if "meals" not in st.session_state:
-        db_data = load_db(user)
-        st.session_state.meals = db_data if db_data else generate_new_menu(pizza_on)
+        db = load_db(user)
+        st.session_state.meals = db if db else generate_menu(piz)
         st.session_state.swap_idx = None
-    
+
     st.title(f"{T['title']} - {user}")
 
-    # --- INFO SECTIONS ---
-    col1, col2 = st.columns(2)
-    with col1:
-        with st.expander(T["pills_title"]): st.markdown(T["pills_txt"])
-    with col2:
-        with st.expander(T["guide_title"]): st.markdown(T["guide_txt"])
+    # Pills & Guidelines
+    c1, c2 = st.columns(2)
+    c1.expander(T["pills"]).markdown(T["pills_txt"])
+    c2.expander(T["guide"]).markdown(T["guide_txt"])
 
-    # --- FREQUENCIES ---
-    st.subheader(T["freq_title"])
-    all_p_ids = [m["prot"] for m in st.session_state.meals]
+    # --- FREQUENZE (TARGETS) ---
+    st.subheader(T["freq"])
+    all_p = [m["prot"] for m in st.session_state.meals]
     cols = st.columns(len(DATA["PROT"]))
-    for i, (p_id, p_info) in enumerate(DATA["PROT"].items()):
-        cols[i].metric(label=p_info[lang], value=all_p_ids.count(p_id))
+    for i, (k, v) in enumerate(DATA["PROT"].items()):
+        current = all_p.count(k)
+        target = v["target"] if (k != "Pizza" or piz) else 0
+        if not piz and k == "Legumes": target = 4
+        
+        # Logica Colore Target
+        color = "normal" if current == target else "inverse" if current > target else "off"
+        delta_label = f"Target: {target}"
+        cols[i].metric(label=v[lang], value=current, delta=delta_label, delta_color=color)
 
     # --- GRID ---
-    for i, day_label in enumerate(T["days"]):
-        with st.expander(f"📅 {day_label.upper()}"):
-            m_cols = st.columns(2)
+    for i, day_name in enumerate(T["days"]):
+        with st.expander(f"📅 {day_name.upper()}"):
+            cols = st.columns(2)
             for j in range(2):
                 idx = i*2 + j
                 m = st.session_state.meals[idx]
-                is_swapping = (st.session_state.swap_idx == idx)
-                
-                with m_cols[j].container(border=True):
-                    st.markdown(f"**{T['lunch' if j==0 else 'dinner']}**")
+                with cols[j].container(border=True):
+                    st.write(f"**{T['lunch' if j==0 else 'dinner']}**")
+                    new_p = st.selectbox(T["prot"], list(DATA["PROT"].keys()), index=list(DATA["PROT"].keys()).index(m["prot"]), format_func=lambda x: DATA["PROT"][x][lang], key=f"p{idx}")
                     
-                    # Selezione Proteina
-                    p_opts = list(DATA["PROT"].keys())
-                    new_p = st.selectbox(T["prot"], p_opts, index=p_opts.index(m["prot"]), format_func=lambda x: DATA["PROT"][x][lang], key=f"p{idx}")
-                    
-                    # Selezione Carbo
                     if new_p in ["Pizza", "One-Pot Meal"]:
                         new_c = "Included"
-                        st.caption(f"✨ {DATA['CARBO']['Included'][lang]}")
+                        if new_p == "Pizza": st.warning(T["pizza_tip"])
                     else:
-                        c_opts = [k for k in DATA["CARBO"].keys() if k != "Included"]
-                        current_c_idx = c_opts.index(m["carbo"]) if m["carbo"] in c_opts else 0
-                        new_c = st.selectbox(T["carb"], c_opts, index=current_c_idx, format_func=lambda x: DATA["CARBO"][x][lang], key=f"c{idx}")
+                        c_opts = [ck for ck in DATA["CARBO"].keys() if ck != "Included"]
+                        new_c = st.selectbox(T["carb"], c_opts, index=c_opts.index(m["carbo"]) if m["carbo"] in c_opts else 0, format_func=lambda x: DATA["CARBO"][x][lang], key=f"c{idx}")
                     
-                    # Selezione Verdura
-                    v_opts = list(DATA["VEG"].keys())
-                    new_v = st.selectbox(T["veg"], v_opts, index=v_opts.index(m["veg"]), format_func=lambda x: DATA["VEG"][x][lang], key=f"v{idx}")
-                    
+                    new_v = st.selectbox(T["veg"], list(DATA["VEG"].keys()), index=list(DATA["VEG"].keys()).index(m["veg"]), format_func=lambda x: DATA["VEG"][x][lang], key=f"v{idx}")
                     st.session_state.meals[idx].update({"prot": new_p, "carbo": new_c, "veg": new_v})
 
-                    # Suggerimenti Grammature
+                    # Grammi dinamici
                     with st.expander(T["sugg"]):
-                        g_p = DATA["PROT"][new_p]["gr"]
-                        u_p = T["unit_pz"] if DATA["PROT"][new_p]["unit"] == "pz" else T["unit_g"]
-                        g_c = DATA["CARBO"][new_c]["gr"]
-                        
-                        st.write(f"**{T['total']} {num_persone}:**")
-                        st.write(f"- {DATA['PROT'][new_p][lang]}: {g_p * num_persone} {u_p}")
-                        if g_c > 0: st.write(f"- {DATA['CARBO'][new_c][lang]}: {g_c * num_persone} {T['unit_g']}")
-                        st.write(f"- {DATA['VEG'][new_v][lang]}: {200 * num_persone} {T['unit_g']}")
+                        g_p, g_c = DATA["PROT"][new_p]["gr"], DATA["CARBO"][new_c]["gr"]
+                        u_p = "pz" if DATA["PROT"][new_p]["unit"] == "pz" else "g"
+                        st.write(f"**{T['total']} {n_p}:**")
+                        st.write(f"- {DATA['PROT'][new_p][lang]}: {g_p * n_p} {u_p}")
+                        if g_c > 0: st.write(f"- {DATA['CARBO'][new_c][lang]}: {g_c * n_p} g")
+                        st.write(f"- {T['veg']}: {200 * n_p} g")
 
-                    # Bottoni
-                    b_cols = st.columns(2)
-                    m["locked"] = b_cols[0].checkbox(T["lock"], value=m["locked"], key=f"lk{idx}")
-                    btn_txt = T["confirm"] if (st.session_state.swap_idx is not None and not is_swapping) else T["swap"]
-                    if b_cols[1].button(btn_txt, key=f"sw{idx}", use_container_width=True):
-                        if st.session_state.swap_idx is None:
-                            st.session_state.swap_idx = idx
-                            st.rerun()
+                    # Swap & Lock
+                    sl1, sl2 = st.columns(2)
+                    m["locked"] = sl1.checkbox(T["lock"], m["locked"], key=f"lk{idx}")
+                    if sl2.button(T["swap"], key=f"sw{idx}", use_container_width=True):
+                        if st.session_state.swap_idx is None: st.session_state.swap_idx = idx
                         else:
                             st.session_state.meals[idx], st.session_state.meals[st.session_state.swap_idx] = st.session_state.meals[st.session_state.swap_idx], st.session_state.meals[idx]
                             st.session_state.swap_idx = None
                             st.rerun()
 
-    # --- SHOPPING LIST ---
+    # --- SHOPPING LIST STILIZZATA ---
     st.divider()
-    st.markdown(f"""
-        <div style="background-color: #f0f2f6; padding: 20px; border-radius: 10px; border-left: 5px solid #ff4b4b;">
-            <h2 style="margin: 0;">{T['shop_title']}</h2>
-            <p style="margin: 0; font-weight: bold;">{T['shop_calc']} <span style="color: #ff4b4b;">{num_persone}</span> {lang}</p>
-        </div>
-    """, unsafe_allow_html=True)
+    st.markdown(f"""<div style="background:#f0f2f6;padding:20px;border-radius:10px;border-left:5px solid #ff4b4b">
+        <h3>{T['shop']}</h3><p>{T['shop_calc']} <b>{n_p}</b> {'persona/person' if n_p==1 else 'persone/people'}</p></div>""", unsafe_allow_html=True)
     
     basket = {}
     for m in st.session_state.meals:
         # Prot
-        p_id = m["prot"]
-        p_name = DATA["PROT"][p_id][lang]
-        p_qty = DATA["PROT"][p_id]["gr"] * num_persone
-        p_unit = DATA["PROT"][p_id]["unit"]
-        basket[p_name] = basket.get(p_name, {"qty": 0, "unit": p_unit})
-        basket[p_name]["qty"] += p_qty
-        
+        p_info = DATA["PROT"][m["prot"]]
+        basket[p_info[lang]] = basket.get(p_info[lang], {"q": 0, "u": p_info["unit"]})
+        basket[p_info[lang]]["q"] += p_info["gr"] * n_p
         # Carbo
-        c_id = m["carbo"]
-        if c_id != "Included":
-            c_name = DATA["CARBO"][c_id][lang]
-            c_qty = DATA["CARBO"][c_id]["gr"] * num_persone
-            basket[c_name] = basket.get(c_name, {"qty": 0, "unit": "g"})
-            basket[c_name]["qty"] += c_qty
-        
+        if m["carbo"] != "Included":
+            c_info = DATA["CARBO"][m["carbo"]]
+            basket[c_info[lang]] = basket.get(c_info[lang], {"q": 0, "u": "g"})
+            basket[c_info[lang]]["q"] += c_info["gr"] * n_p
         # Veg
         v_name = DATA["VEG"][m["veg"]][lang]
-        v_qty = 200 * num_persone
-        basket[v_name] = basket.get(v_name, {"qty": 0, "unit": "g"})
-        basket[v_name]["qty"] += v_qty
+        basket[v_name] = basket.get(v_name, {"q": 0, "u": "g"})
+        basket[v_name]["q"] += 200 * n_p
 
-    s_cols = st.columns(2)
+    c1, c2 = st.columns(2)
     items = list(basket.items())
     for i, (name, info) in enumerate(items):
-        target_col = s_cols[0] if i < len(items)/2 else s_cols[1]
-        qty = info["qty"]
-        unit = T["unit_pz"] if info["unit"] == "pz" else T["unit_g"]
-        
-        if info["unit"] == "g" and qty >= 1000:
-            val_str = f"{qty/1000:.2f} {T['kg_label']}"
-        else:
-            val_str = f"{qty} {unit}"
-        
-        target_col.write(f"- **{name}**: {val_str}")
+        col = c1 if i < len(items)/2 else c2
+        q, u = info["q"], info["u"]
+        val = f"{q/1000:.2f} Kg" if (u=="g" and q>=1000) else f"{q} {u}"
+        col.write(f"- **{name}**: {val}")
 
-if __name__ == "__main__":
-    main()
+if __name__ == "__main__": main()
