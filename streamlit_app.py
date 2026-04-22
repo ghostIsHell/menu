@@ -25,10 +25,11 @@ CONFIG = {
         "Summer": ['Tomatoes', 'Peppers', 'Eggplants', 'Zucchini', 'Green Beans', 'Cucumbers'],
         "Autumn": ['Pumpkin', 'Mushrooms', 'Broccoli', 'Spinach', 'Fennel', 'Carrots']
     },
-    "PORTIONS_INFO": {
-        "Whole Grain Pasta": "80g", "Brown Rice": "80g", "Spelt/Barley": "80g", "Gnocchi": "200g",
-        "Whole Grain Bread": "50-60g", "Potatoes": "200g", "Legumes (Dry)": "50g", "Legumes (Cooked)": "150g",
-        "Fish": "150g", "White Meat": "120g", "Red Meat": "100g", "Cheese": "100g", "Eggs": "2 units"
+    "PORTIONS_GRAMS": {
+        "Whole Grain Pasta": 80, "Brown Rice": 80, "Spelt": 80, "Barley": 80, "Gnocchi": 200,
+        "Whole Grain Bread": 50, "Potatoes": 200, "Whole Grain Couscous": 80,
+        "Legumes": 150, "Fish": 150, "White Meat": 120, "Red Meat": 100,
+        "Cheese": 100, "Eggs": 2, "Vegetables": 200, "Pizza": 1
     },
     "ONE_POT_EXAMPLES": [
         "Pasta and Beans", "Rice and Peas", "Tuna Salad (Tuna+Bread+Veg)", 
@@ -40,8 +41,7 @@ CONFIG = {
 ALL_VEG = sorted(list(set([v for sublist in CONFIG["VEG_SEASONAL"].values() for v in sublist])))
 CONFIG["ALL_CARBO"] = sorted(list(set(CONFIG["CARBO_LUNCH"] + CONFIG["CARBO_DINNER"])))
 
-# --- 2. DATABASE LOGIC ---
-# Using the manual secret mapping for maximum reliability
+# --- 2. DATABASE CONNECTION ---
 conn = st.connection(
     "supabase",
     type=SupabaseConnection,
@@ -62,42 +62,27 @@ def load_menu_from_db(username):
         if len(query.data) == 14:
             return sorted(query.data, key=lambda x: (x['day_idx'], x['type'] == 'Dinner'))
         return None
-    except Exception:
-        return None
+    except Exception: return None
 
 def save_menu_to_db(username, meals):
     try:
-        # 1. Clean old entries for this specific user
         conn.table(CONFIG["TABLE_NAME"]).delete().eq("user_id", username).execute()
-        
-        # 2. Prepare new data
         insert_data = []
         for i, m in enumerate(meals):
             insert_data.append({
-                "user_id": username,
-                "day_idx": i // 2,
-                "type": m["type"],
-                "prot": m["prot"],
-                "carbo": m["carbo"],
-                "veg": m["veg"],
+                "user_id": username, "day_idx": i // 2, "type": m["type"],
+                "prot": m["prot"], "carbo": m["carbo"], "veg": m["veg"],
                 "locked": m.get("locked", False)
             })
-        
-        # 3. Bulk insert
         conn.table(CONFIG["TABLE_NAME"]).insert(insert_data).execute()
-        st.sidebar.success("Database synced successfully!")
-    except Exception as e:
-        st.error(f"Sync Error: {e}")
+    except Exception as e: st.error(f"Sync Error: {e}")
 
-# --- 3. MEAL GENERATION ENGINE ---
+# --- 3. MEAL GENERATION ---
 def build_protein_pool(use_pizza):
     pool = []
     targets = CONFIG["TARGET_PROT"].copy()
-    if use_pizza:
-        targets["Pizza"] = 1
-    else:
-        targets["Legumes"] += 1
-    
+    if use_pizza: targets["Pizza"] = 1
+    else: targets["Legumes"] += 1
     for prot, count in targets.items():
         pool.extend([prot] * count)
     random.shuffle(pool)
@@ -105,127 +90,105 @@ def build_protein_pool(use_pizza):
 
 def generate_new_menu(use_pizza=True):
     prot_pool = build_protein_pool(use_pizza)
-    current_season_veg = CONFIG["VEG_SEASONAL"][get_current_season()]
+    current_veg = CONFIG["VEG_SEASONAL"][get_current_season()]
     meals = []
-    
     for i in range(14):
         m_type = "Lunch" if i % 2 == 0 else "Dinner"
         prot = prot_pool.pop()
-        
-        if prot in ['Pizza', 'One-Pot Meal']:
-            carbo = "Included"
-        else:
-            carbo = random.choice(CONFIG["CARBO_LUNCH"] if m_type == "Lunch" else CONFIG["CARBO_DINNER"])
-            
+        carbo = "Included" if prot in ['Pizza', 'One-Pot Meal'] else \
+                random.choice(CONFIG["CARBO_LUNCH"] if m_type == "Lunch" else CONFIG["CARBO_DINNER"])
         meals.append({
-            "type": m_type,
-            "prot": prot,
-            "carbo": carbo,
-            "veg": random.choice(current_season_veg),
-            "locked": False
+            "type": m_type, "prot": prot, "carbo": carbo,
+            "veg": random.choice(current_veg), "locked": False
         })
     return meals
 
 # --- 4. UI COMPONENTS ---
-def render_meal_card(idx):
+def render_meal_card(idx, num_people):
     meal = st.session_state.meals[idx]
     is_swapping = (st.session_state.swap_idx == idx)
     
     with st.container(border=True):
         st.markdown(f"**{'☀️' if meal['type'] == 'Lunch' else '🌙'} {meal['type']}**")
         
-        # Protein Selection
+        # Selectors
         prot_options = list(CONFIG["EMOJI_PROT"].keys())
-        new_p = st.selectbox("Protein Source", prot_options, 
-                             index=prot_options.index(meal['prot']), 
-                             key=f"p_{idx}_{st.session_state.sync_key}")
+        new_p = st.selectbox("Protein", prot_options, index=prot_options.index(meal['prot']), key=f"p_{idx}_{st.session_state.sync_key}")
         
-        # Carbs logic & specific warnings
         if new_p in ['Pizza', 'One-Pot Meal']:
             new_c = "Included"
-            if new_p == 'Pizza':
-                st.warning("🍕 Tip: Whole dough + side of fennel/salad.")
-            else:
-                st.info(f"🍲 Example: {CONFIG['ONE_POT_EXAMPLES'][idx % len(CONFIG['ONE_POT_EXAMPLES'])]}")
+            if new_p == 'Pizza': st.warning("🍕 Tip: Whole dough + side of fennel/salad.")
+            else: st.info(f"🍲 Example: {CONFIG['ONE_POT_EXAMPLES'][idx % len(CONFIG['ONE_POT_EXAMPLES'])]}")
         else:
-            carbo_options = CONFIG["ALL_CARBO"]
-            current_c = meal['carbo'] if meal['carbo'] in carbo_options else carbo_options[0]
-            new_c = st.selectbox("Cereal/Carb", carbo_options, 
-                                 index=carbo_options.index(current_c), 
-                                 key=f"c_{idx}_{st.session_state.sync_key}")
+            c_opts = CONFIG["ALL_CARBO"]
+            curr_c = meal['carbo'] if meal['carbo'] in c_opts else c_opts[0]
+            new_c = st.selectbox("Carb", c_opts, index=c_opts.index(curr_c), key=f"c_{idx}_{st.session_state.sync_key}")
         
-        # Vegetable selection
-        new_v = st.selectbox("Vegetables", ALL_VEG, 
-                             index=ALL_VEG.index(meal['veg']), 
-                             key=f"v_{idx}_{st.session_state.sync_key}")
+        new_v = st.selectbox("Vegetables", ALL_VEG, index=ALL_VEG.index(meal['veg']), key=f"v_{idx}_{st.session_state.sync_key}")
 
-        # Info Expander (Portions)
-        with st.expander("ℹ️ Info & Grams"):
-            st.write("**Target Portions:**")
-            for item, grams in CONFIG["PORTIONS_INFO"].items():
-                st.caption(f"- {item}: {grams}")
+        # INFO & GRAMMATURE EXPANDER
+        with st.expander("ℹ️ Suggestions & Grams"):
+            p_gr = CONFIG["PORTIONS_GRAMS"].get(new_p, 0) * num_people
+            c_gr = CONFIG["PORTIONS_GRAMS"].get(new_c, 0) * num_people
+            v_gr = CONFIG["PORTIONS_GRAMS"].get("Vegetables", 200) * num_people
+            
+            st.write(f"**Weights for {num_people} people:**")
+            st.write(f"- {new_p}: {p_gr}g/pcs")
+            if new_c != "Included": st.write(f"- {new_c}: {c_gr}g")
+            st.write(f"- {new_v}: {v_gr}g")
+            st.caption("Cooking Tip: Prefer steaming or grilling.")
 
-        # State Update
+        # Update State
         if new_p != meal['prot'] or new_c != meal['carbo'] or new_v != meal['veg']:
             st.session_state.meals[idx].update({"prot": new_p, "carbo": new_c, "veg": new_v})
 
-        # Actions (Lock & Swap)
+        # Actions
         c1, c2 = st.columns(2)
         meal['locked'] = c1.checkbox("Lock", value=meal['locked'], key=f"l_{idx}_{st.session_state.sync_key}")
-        
         btn_label = "✅ CONFIRM" if (st.session_state.swap_idx is not None and not is_swapping) else "↔️ SWAP"
         if is_swapping: btn_label = "🚫 CANCEL"
         
         if c2.button(btn_label, key=f"btn_{idx}_{st.session_state.sync_key}", use_container_width=True):
-            if st.session_state.swap_idx is None:
-                st.session_state.swap_idx = idx
-                st.rerun()
-            elif is_swapping:
-                st.session_state.swap_idx = None
-                st.rerun()
+            if st.session_state.swap_idx is None: st.session_state.swap_idx = idx
+            elif is_swapping: st.session_state.swap_idx = None
             else:
-                idx1, idx2 = st.session_state.swap_idx, idx
-                st.session_state.meals[idx1], st.session_state.meals[idx2] = st.session_state.meals[idx2], st.session_state.meals[idx1]
+                i1, i2 = st.session_state.swap_idx, idx
+                st.session_state.meals[i1], st.session_state.meals[i2] = st.session_state.meals[i2], st.session_state.meals[i1]
                 st.session_state.swap_idx = None
                 st.session_state.sync_key = str(uuid.uuid4())
-                st.rerun()
+            st.rerun()
 
 # --- 5. MAIN APP ---
 def main():
-    st.set_page_config(page_title="Safe Healthy Menu DB", layout="wide", page_icon="🥗")
+    st.set_page_config(page_title="Healthy Menu DB", layout="wide", page_icon="🥗")
     
-    # State initialization
     if 'sync_key' not in st.session_state: st.session_state.sync_key = str(uuid.uuid4())
     if 'swap_idx' not in st.session_state: st.session_state.swap_idx = None
 
-    # Sidebar Controls
     with st.sidebar:
-        st.header("👤 Profile & Settings")
-        username = st.text_input("Username / Email", value="guest_user")
-        use_pizza = st.toggle("Include Weekly Pizza", value=True)
+        st.header("Settings")
+        username = st.text_input("Username", value="guest_user")
+        num_people = st.number_input("Number of People", 1, 10, 2)
+        use_pizza = st.toggle("Include Pizza", value=True)
         
-        st.divider()
-        if st.button("🔄 GENERATE NEW MENU", use_container_width=True):
+        if st.button("🔄 GENERATE & SAVE"):
             st.session_state.meals = generate_new_menu(use_pizza)
             save_menu_to_db(username, st.session_state.meals)
             st.rerun()
         
-        if st.button("💾 SAVE CHANGES", type="primary", use_container_width=True):
+        if st.button("💾 SAVE CHANGES"):
             save_menu_to_db(username, st.session_state.meals)
-            st.success("All changes saved to database!")
+            st.success("Synced!")
 
-    # Load data from DB if session is empty
+    # Load data
     if 'meals' not in st.session_state:
         db_data = load_menu_from_db(username)
-        if db_data:
-            st.session_state.meals = db_data
-        else:
-            st.session_state.meals = generate_new_menu(use_pizza)
+        st.session_state.meals = db_data if db_data else generate_new_menu(use_pizza)
 
     st.title(f"🥗 Weekly Menu for {username}")
 
-    # --- 📊 PROTEIN STATISTICS LOGIC ---
-    st.subheader("📊 Protein Balance Status")
+    # --- 📊 PROTEIN STATISTICS ---
+    st.subheader("📊 Protein Balance")
     cols = st.columns(len(CONFIG["EMOJI_PROT"]))
     all_prots = [m['prot'] for m in st.session_state.meals]
     
@@ -238,33 +201,42 @@ def main():
         emoji = CONFIG["EMOJI_PROT"][name]
         
         if current == target:
-            color = "normal"
-            arrow = "off"
-            label = f"↕ Target: {target}"
+            color, arrow, label = "normal", "off", f"↕ Target: {target}"
         elif current > target: 
-            color = "inverse"
-            arrow = "up"
-            label = f"Target: {target}"
+            color, arrow, label = "inverse", "up", f"Target: {target}"
         else: 
-            color = "off"
-            arrow = "down"
-            label = f"Target: {target}"
+            color, arrow, label = "off", "down", f"Target: {target}"
         
-        cols[i].metric(
-            label=f"{emoji} {name}", 
-            value=f"{current}", 
-            delta=label, 
-            delta_color=color, 
-            delta_arrow=arrow
-        )
+        cols[i].metric(label=f"{emoji} {name}", value=f"{current}", delta=label, delta_color=color, delta_arrow=arrow)
 
-    # --- 📅 MENU GRID ---
+    # --- 📅 GRID RENDERING ---
     days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
-    for i, day_name in enumerate(days):
-        with st.expander(f"📅 {day_name.upper()}"):
-            col_l, col_r = st.columns(2)
-            with col_l: render_meal_card(i*2)
-            with col_r: render_meal_card(i*2 + 1)
+    for i, day in enumerate(days):
+        with st.expander(f"📅 {day.upper()}"):
+            l, r = st.columns(2)
+            with l: render_meal_card(i*2, num_people)
+            with r: render_meal_card(i*2 + 1, num_people)
+
+    # --- 🛒 SHOPPING LIST ---
+    st.divider()
+    st.subheader("🛒 Weekly Shopping List")
+    
+    shop_list = {}
+    for m in st.session_state.meals:
+        for item in [m['prot'], m['carbo'], m['veg']]:
+            if item == "Included": continue
+            key = "Vegetables" if item in ALL_VEG else item
+            qty = CONFIG["PORTIONS_GRAMS"].get(key, 0) * num_people
+            shop_list[key] = shop_list.get(key, 0) + qty
+
+    s_col1, s_col2 = st.columns(2)
+    items = list(shop_list.items())
+    half = (len(items) + 1) // 2
+    
+    for i, (name, total) in enumerate(items):
+        target_col = s_col1 if i < half else s_col2
+        unit = "pcs" if name in ["Eggs", "Pizza"] else "g"
+        target_col.write(f"- **{name}**: {total}{unit}")
 
 if __name__ == "__main__":
     main()
