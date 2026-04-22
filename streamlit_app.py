@@ -246,7 +246,6 @@ def main():
                 # st.write("Esito: Profilo NON trovato")
                 st.session_state.load_error = f"Errore: {user_input} non esiste."
                 st.sidebar.warning("UTENTE NON TROVATO")
-                st.stop()
                 #st.toast(st.session_state.load_error, icon="❌")
                 
         n_people = st.number_input(T["people"], 1, 10, value=st.session_state.n_people)
