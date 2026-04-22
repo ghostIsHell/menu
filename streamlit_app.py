@@ -239,14 +239,14 @@ def main():
                         })
                     st.session_state.menu_version += 1
                     st.rerun()
-                    st.success(f"{T['welcomeback']} {user_input}!")
                 else:
                     st.sidebar.info("Profilo trovato, ma nessun pasto salvato.")
             else:
                 # st.write("Esito: Profilo NON trovato")
                 st.sidebar.warning(f"Errore: utente {user_input} non trovato")
                 #st.toast(st.session_state.load_error, icon="❌")
-                
+
+        st.success(f"{T['welcomeback']} {user_input}!")
         n_people = st.number_input(T["people"], 1, 10, value=st.session_state.n_people)
         st.session_state.n_people = n_people # Sync
         
