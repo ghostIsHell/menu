@@ -216,11 +216,11 @@ def main():
         st.header(T["settings"])
 
         if st.button(T["load_btn"], use_container_width=True):
-            print(f"--- Tentativo caricamento per: {user_input} ---")
+            st.write(f"--- Tentativo caricamento per: {user_input} ---")
             profile, db_meals = load_user_data(user_input)
             # st.write(f"DEBUG: Risultato query profilo: {profile}")
             if profile:
-                print("Esito: Profilo TROVATO")
+                st.write("Esito: Profilo TROVATO")
                 st.session_state.n_people = profile['n_people']
                 st.session_state.piz = profile['pizza_enabled']
                 st.session_state.lang = profile['default_lang']
@@ -238,7 +238,7 @@ def main():
                     st.success(f"T['welcomeback'] {user_input}!")
                     st.rerun()
                 else:
-                    print("Esito: Profilo NON trovato")
+                    st.write("Esito: Profilo NON trovato")
                     st.session_state.load_error = f"Errore: {user_input} non esiste."
                     st.sidebar.warning("UTENTE NON TROVATO")
                     #st.toast(st.session_state.load_error, icon="❌")
