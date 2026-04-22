@@ -292,9 +292,23 @@ def main():
     # --- SHOPPING LIST STILIZZATA ---
     st.divider()
 
+    st.subheader(T['shop'])
+
     st.markdown(f"""
-        <div style="background:#f0f2f6; padding:15px; border-radius:10px; border-left:5px solid #ff4b4b; margin-bottom:20px;">
-            <p style="margin:0;">{T['shop_calc']} <b>{n_p}</b> {('persona' if n_p==1 else 'persone')}</p>
+        <div style="
+            background-color: #f0f2f6; 
+            padding: 15px; 
+            border-radius: 10px; 
+            border-left: 5px solid #ff4b4b; 
+            margin-bottom: 20px;
+        ">
+            <p style="
+                margin: 0; 
+                color: #31333f; 
+                font-size: 16px;
+            ">
+                {T['shop_calc']} <b>{n_p}</b> {('persona' if n_p==1 else 'persone')}
+            </p>
         </div>
     """, unsafe_allow_html=True)
     
