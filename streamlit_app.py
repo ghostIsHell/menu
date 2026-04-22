@@ -210,6 +210,35 @@ def main():
     if 'scambio_idx' not in st.session_state: st.session_state.scambio_idx = None
 
     st.title(CONFIG["TITLE"])
+
+    # Sezione Grammature Consigliate
+    with st.expander("⚖️ Grammature Consigliate (per persona)"):
+        st.markdown("""
+        Le porzioni si riferiscono al prodotto **pesato a crudo** e sono basate sulle linee guida per un adulto medio:
+        """)
+        
+        col_g1, col_g2 = st.columns(2)
+        
+        with col_g1:
+            st.markdown("""
+            **Carboidrati (Cereali):**
+            * Pasta, Riso, Farro, Orzo: **80g**
+            * Pane Integrale: **50g**
+            * Patate: **200g**
+            * Gnocchi: **200g**
+            * Cous Cous: **80g**
+            """)
+            
+        with col_g2:
+            st.markdown("""
+            **Proteine:**
+            * Legumi (secchi): **50g** / (cotti/barattolo): **150g**
+            * Pesce fresco: **150g**
+            * Carne Bianca/Rossa: **100g**
+            * Uova: **2 unità**
+            * Formaggio: **100g**
+            """)
+        st.caption("Nota: Accompagna sempre ogni pasto con almeno 200g di verdura di stagione.")
     
     # Sezione "Regole del Piatto Sano"
     with st.expander("📚 Pillole di Educazione Alimentare (Pizza e Piatti Unici)"):
