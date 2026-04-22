@@ -219,8 +219,21 @@ def main():
                 st.session_state.n_people = profile['n_people']
                 st.session_state.piz = profile['pizza_enabled']
                 st.session_state.lang = profile['default_lang']
-                if db_meals: st.session_state.meals = db_meals
-                st.rerun()
+                if db_meals:
+                    st.session_state.meals = []
+                    for m in db_meals:
+                        st.session_state.meals.append({
+                            "type": m["type"],
+                            "prot": m["prot"],
+                            "carbo": m["carbo"],
+                            "veg": m["veg"],
+                            "locked": m["locked"]
+                        })
+                    st.session_state.menu_version += 1 
+                    st.success(T["sync"])
+                    st.rerun()
+                else:
+                    st.error("Utente non trovato")
                 
         n_people = st.number_input(T["people"], 1, 10, value=st.session_state.n_people)
         st.session_state.n_people = n_people # Sync
