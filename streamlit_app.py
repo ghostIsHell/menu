@@ -239,8 +239,8 @@ def main():
                             "locked": m["locked"]
                         })
                     st.session_state.menu_version += 1
-                    time.sleep(1)
                     st.sidebar.success(f"{T['welcomeback']} {user_input}!")
+                    time.sleep(1)
                     st.rerun()
                 else:
                     st.sidebar.info("Profilo trovato, ma nessun pasto salvato.")
