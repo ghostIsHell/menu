@@ -63,7 +63,8 @@ UI_TEXT = {
         "shop_calc": "Calcolata per", "days": ["Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato", "Domenica"],
         "lunch": "Pranzo", "dinner": "Cena", "prot": "Proteina", "carb": "Carboidrato", "veg": "Verdura",
         "sugg": "ℹ️ Suggerimenti e Grammi", "single": "Porzione Singola", "total": "Totale per",
-        "swap": "↔️ SCAMBIA", "confirm": "✅ CONFERMA", "lock": "Blocca", "pizza_tip": "🍕 Tip: Impasto integrale + contorno di finocchi/insalata."
+        "swap": "↔️ SCAMBIA", "confirm": "✅ CONFERMA", "lock": "Blocca", "pizza_tip": "🍕 Tip: Impasto integrale + contorno di finocchi/insalata.",
+        "target_label": "Target"
     },
     "EN": {
         "title": "Weekly Menu", "settings": "⚙️ Settings", "people": "People at the table",
@@ -76,7 +77,8 @@ UI_TEXT = {
         "shop_calc": "Calculated for", "days": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
         "lunch": "Lunch", "dinner": "Dinner", "prot": "Protein", "carb": "Carbohydrate", "veg": "Vegetables",
         "sugg": "ℹ️ Suggestions & Grams", "single": "Single Portion", "total": "Total for",
-        "swap": "↔️ SWAP", "confirm": "✅ CONFIRM", "lock": "Lock", "pizza_tip": "🍕 Tip: Whole dough + side of fennel/salad."
+        "swap": "↔️ SWAP", "confirm": "✅ CONFIRM", "lock": "Lock", "pizza_tip": "🍕 Tip: Whole dough + side of fennel/salad.",
+        "target_label": "Target"
     }
 }
 
@@ -94,23 +96,34 @@ def save_db(user, meals):
     conn.table("user_dinner").insert([{"user_id": user, "day_idx": i//2, "type": m["type"], "prot": m["prot"], "carbo": m["carbo"], "veg": m["veg"], "locked": m["locked"]} for i, m in enumerate(meals)]).execute()
 
 # --- 3. LOGICA GENERAZIONE ---
-def generate_menu(pizza_on):
+def generate_menu(pizza_on, current_meals=None):
     pool = []
     targets = {k: v["target"] for k, v in DATA["PROT"].items()}
     if not pizza_on:
         targets["Pizza"] = 0
         targets["Legumes"] += 1
-    for k, v in targets.items(): pool.extend([k] * v)
+        
+    if current_meals:
+        for m in current_meals:
+            if m.get("locked"):
+                p_type = m["prot"]
+                if p_type in targets and targets[p_type] > 0:
+                    targets[p_type] -= 1
+    
+    for k, v in targets.items(): pool.extend([k] * v)    
     random.shuffle(pool)
     
     meals = []
     veg_keys = list(DATA["VEG"].keys())
     for i in range(14):
-        p = pool.pop()
-        is_lunch = i % 2 == 0
-        if p in ["Pizza", "One-Pot Meal"]: c = "Included"
-        else: c = random.choice(["Whole Grain Pasta", "Brown Rice", "Spelt", "Barley", "Gnocchi"] if is_lunch else ["Whole Grain Bread", "Potatoes", "Whole Grain Couscous"])
-        meals.append({"type": "Lunch" if is_lunch else "Dinner", "prot": p, "carbo": c, "veg": random.choice(veg_keys), "locked": False})
+        if current_meals and current_meals[i].get("locked"):
+            meals.append(current_meals[i])
+        else:
+            p = pool.pop()
+            is_lunch = i % 2 == 0
+            if p in ["Pizza", "One-Pot Meal"]: c = "Included"
+            else: c = random.choice(["Whole Grain Pasta", "Brown Rice", "Spelt", "Barley", "Gnocchi"] if is_lunch else ["Whole Grain Bread", "Potatoes", "Whole Grain Couscous"])
+            meals.append({"type": "Lunch" if is_lunch else "Dinner", "prot": p, "carbo": c, "veg": random.choice(veg_keys), "locked": False})
     return meals
 
 # --- 4. APP ---
@@ -125,8 +138,10 @@ def main():
         n_p = st.number_input(T["people"], 1, 10, 1)
         piz = st.toggle(T["pizza_toggle"], True)
         if st.button(T["gen"], use_container_width=True):
-            st.session_state.meals = generate_menu(piz)
+            current = st.session_state.get("meals")
+            st.session_state.meals = generate_menu(piz, current)
             save_db(user, st.session_state.meals)
+            st.session_state.swap_idx = None
             st.rerun()
         if st.button(T["save"], use_container_width=True):
             save_db(user, st.session_state.meals)
@@ -155,8 +170,9 @@ def main():
         
         # Logica Colore Target
         color = "normal" if current == target else "inverse" if current > target else "off"
-        delta_label = f"Target: {target}"
-        cols[i].metric(label=v[lang], value=current, delta=delta_label, delta_color=color)
+        arrow = "off" if current == target else "up" if current > target else "down"
+        
+        cols[i].metric(label=v[lang], value=current, delta=f"{T['target_label']}: {target}", delta_color=color, delta_arrow=arrow)
 
     # --- GRID ---
     for i, day_name in enumerate(T["days"]):
