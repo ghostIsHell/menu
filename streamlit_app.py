@@ -58,7 +58,7 @@ VERDURE_AUTOMATICHE = CONFIG["VERDURE_STAGIONALI"][STAGIONE_ATTUALE]
 def build_protein_pool(usa_pizza):
     pool = []
     targets = CONFIG["TARGET_PROTEINE"].copy()
-    if usa_pizza: #TODO Random?
+    if usa_pizza:
         targets["Pizza"] = 1
     else:
         targets["Legumi"] = targets.get("Legumi", 0) + 1
@@ -179,7 +179,7 @@ def render_shopping_list():
         spesa[prot] = spesa.get(prot, 0) + 1
         # Conteggio Carboidrati
         carbo = p['carbo']
-        if carbo != "Incluso" and carbo != "Già incluso nel piatto":
+        if carbo not in ["Già incluso nel piatto", "Incluso"]:
             spesa[carbo] = spesa.get(carbo, 0) + 1
         # Conteggio Verdure
         verd = p['verd']
@@ -206,6 +206,8 @@ def main():
     if 'menu_key' not in st.session_state: st.session_state.menu_key = str(uuid.uuid4())
     if 'pasti' not in st.session_state: st.session_state.pasti = load_data()
     if 'scambio_idx' not in st.session_state: st.session_state.scambio_idx = None
+    if 'shared_num_persone' not in st.session_state: st.session_state.shared_num_persone = 2
+    if 'usa_pizza_val' not in st.session_state: st.session_state.usa_pizza_val = True
 
     st.title(CONFIG["TITLE"])
 
@@ -279,26 +281,31 @@ def main():
     st.divider()
     st.subheader("📊 Frequenze Settimanali")
     all_prots = [p['prot'] for p in st.session_state.pasti]
-    
-    prots_to_show = list(CONFIG["TARGET_PROTEINE"].keys())
-    if "Pizza" in all_prots and "Pizza" not in prots_to_show:
-        prots_to_show.append("Pizza")
-    
-    cols = st.columns(len(prots_to_show))
 
-    for i, nome in enumerate(prots_to_show):
+    target_dinamici = CONFIG["TARGET_PROTEINE"].copy()
+    if usa_pizza:
+        target_dinamici["Pizza"] = 1
+    else:
+        target_dinamici["Legumi"] += 1
+
+    cols = st.columns(len(target_dinamici))
+
+    for i, (nome, t_val) in enumerate(target_dinamici.items()):
         attuale = all_prots.count(nome)
-        if nome == "Pizza":
-            target = 1 if usa_pizza else 0
-        else:
-            target = CONFIG["TARGET_PROTEINE"].get(nome, 0)
-
         emoji = CONFIG["EMOJI_PROT"].get(nome, '🍴')
         
-        color = "normal" if attuale == target else "inverse" if attuale > target else "off"
-        arrow = "off" if attuale == target else "up" if attuale > target else "down"
+        diff = attuale - t_val
+        # Verde se perfetto, rosso/arancione se diverso
+        color = "normal" if diff == 0 else "inverse"
+        arrow = "off" if diff == 0 else "up" if diff > 0 else "down"
         
-        cols[i].metric(label=f"{emoji} {nome}", value=f"{attuale}", delta=f"Target: {target}", delta_color=color, delta_arrow=arrow)
+        cols[i].metric(
+            label=f"{emoji} {nome}", 
+            value=attuale, 
+            delta=f"Target: {t_val}", 
+            delta_color=color,
+            delta_arrow=arrow
+        )
 
     render_shopping_list()
 
