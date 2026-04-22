@@ -240,7 +240,7 @@ def main():
                         })
                     st.session_state.menu_version += 1
                     time.sleep(1)
-                    st.toast(f"{T['welcomeback']} {user_input}!", icon="✅")
+                    st.sidebar.success(f"{T['welcomeback']} {user_input}!")
                     st.rerun()
                 else:
                     st.sidebar.info("Profilo trovato, ma nessun pasto salvato.")
