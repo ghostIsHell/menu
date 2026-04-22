@@ -223,7 +223,7 @@ def main():
             st.write(f"--- Tentativo caricamento per: {user_input} ---")
             profile, db_meals = load_user_data(user_input)
             # st.write(f"DEBUG: Risultato query profilo: {profile}")
-            if profile:
+            if profile not None:
                 st.write("Esito: Profilo TROVATO")
                 st.session_state.n_people = profile['n_people']
                 st.session_state.piz = profile['pizza_enabled']
