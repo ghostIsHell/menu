@@ -92,8 +92,29 @@ def load_db(user):
     return sorted(res.data, key=lambda x: (x['day_idx'], x['type'] == 'Dinner')) if len(res.data) == 14 else None
 
 def save_db(user, meals):
-    conn.table("user_dinner").delete().eq("user_id", user).execute()
-    conn.table("user_dinner").insert([{"user_id": user, "day_idx": i//2, "type": m["type"], "prot": m["prot"], "carbo": m["carbo"], "veg": m["veg"], "locked": m["locked"]} for i, m in enumerate(meals)]).execute()
+    try:
+        # 1. Tenta la cancellazione
+        res_del = conn.table("user_dinner").delete().eq("user_id", user).execute()
+        
+        # 2. Prepara i dati
+        to_insert = [
+            {
+                "user_id": user, 
+                "day_idx": i//2, 
+                "type": m["type"], 
+                "prot": m["prot"], 
+                "carbo": m["carbo"], 
+                "veg": m["veg"], 
+                "locked": m.get("locked", False)
+            } for i, m in enumerate(meals)
+        ]
+        
+        # 3. Tenta l'inserimento
+        res_ins = conn.table("user_dinner").insert(to_insert).execute()
+        
+    except Exception as e:
+        # Questo ti dirà se l'errore è "401 Unauthorized" o "42P01 Table not found" ecc.
+        st.error(f"Dettaglio Errore: {str(e)}")
 
 # --- 3. LOGICA GENERAZIONE ---
 def generate_menu(pizza_on, current_meals=None):
