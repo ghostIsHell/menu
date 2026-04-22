@@ -66,8 +66,6 @@ def build_protein_pool(usa_pizza):
     for prot, count in targets.items():
         pool.extend([prot] * count)
 
-    while len(pool) < 14: pool.append("Legumi")
-
     random.shuffle(pool)
     return pool
 
