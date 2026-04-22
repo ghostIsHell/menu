@@ -52,7 +52,7 @@ DATA = {
 }
 
 UI_TEXT = {
-    "IT": {
+"IT": {
         "title": "Menù Settimanale", "settings": "⚙️ Impostazioni", "people": "Persone a tavola",
         "pizza_toggle": "Includi Pizza Settimanale", "gen": "🔄 GENERA", "save": "💾 SALVA MODIFICHE",
         "sync": "Sincronizzato!", "pills": "📚 Pillole di Educazione Alimentare",
@@ -62,11 +62,9 @@ UI_TEXT = {
         "freq": "📊 Frequenze Settimanali", "shop": "🛒 Lista della Spesa",
         "shop_calc": "Calcolata per", "days": ["Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato", "Domenica"],
         "lunch": "Pranzo", "dinner": "Cena", "prot": "Proteina", "carb": "Carboidrato", "veg": "Verdura",
-        "sugg": "ℹ️ Suggerimenti e Grammi", "single": "Porzione Singola", "total": "Totale per",
+        "sugg": "ℹ️ Suggerimenti e Grammi", "total": "Totale per",
         "swap": "↔️ SCAMBIA", "confirm": "✅ CONFERMA", "lock": "Blocca", "pizza_tip": "🍕 Tip: Impasto integrale + contorno di finocchi/insalata.",
-        "target_label": "Target",
-        "menu_saved": "✅ Menu salvato nel database!",
-        "cancel": "🚫 CANCEL"
+        "target_label": "Target", "menu_saved": "✅ Profilo e Menu salvati!", "cancel": "🚫 ANNULLA", "load_btn": "📥 CARICA PROFILO"
     },
     "EN": {
         "title": "Weekly Menu", "settings": "⚙️ Settings", "people": "People at the table",
@@ -78,39 +76,54 @@ UI_TEXT = {
         "freq": "📊 Weekly Frequencies", "shop": "🛒 Shopping List",
         "shop_calc": "Calculated for", "days": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
         "lunch": "Lunch", "dinner": "Dinner", "prot": "Protein", "carb": "Carbohydrate", "veg": "Vegetables",
-        "sugg": "ℹ️ Suggestions & Grams", "single": "Single Portion", "total": "Total for",
+        "sugg": "ℹ️ Suggestions & Grams", "total": "Total for",
         "swap": "↔️ SWAP", "confirm": "✅ CONFIRM", "lock": "Lock", "pizza_tip": "🍕 Tip: Whole dough + side of fennel/salad.",
-        "target_label": "Target",
-        "menu_saved": "✅ Menu saved into database!",
-        "cancel": "🚫 ANNULLA"
+        "target_label": "Target", "menu_saved": "✅ Profile & Menu saved!", "cancel": "🚫 CANCEL", "load_btn": "📥 LOAD PROFILE"
     }
 }
 
 # --- 2. DATABASE ---
-conn = st.connection("supabase", type=SupabaseConnection, 
-                    url=st.secrets["connections"]["supabase"]["url"], 
-                    key=st.secrets["connections"]["supabase"]["key"])
+conn = st.connection("supabase", type=SupabaseConnection)
 
-def load_db(user):
+def load_user_data(username):
     try:
-        res = conn.table("user_dinner").select("*").eq("user_id", user).execute()
-        if res.data and len(res.data) == 14:
-            return sorted(res.data, key=lambda x: (x['day_idx'], x['type'] == 'Dinner'))
-        return None
-    except Exception as e:
-        st.error(f"Errore caricamento: {e}")
-        return None
-
-def save_db(user, meals, success_msg):
-    try:
-        # 1. Tenta la cancellazione
-        res_del = conn.table("user_dinner").delete().eq("user_id", user).execute()
+        # 1. Carica il profilo
+        res_prof = conn.table("profiles").select("*").eq("username", username).execute()
         
-        # 2. Prepara i dati
+        if res_prof.data:
+            profile = res_prof.data[0]
+            # 2. Carica i pasti legati a quel profilo ID
+            res_meals = conn.table("user_dinner").select("*").eq("profile_id", profile['id']).execute()
+            
+            meals = None
+            if res_meals.data and len(res_meals.data) == 14:
+                meals = sorted(res_meals.data, key=lambda x: (x['day_idx'], x['type'] == 'Dinner'))
+            
+            return profile, meals
+        return None, None
+    except Exception as e:
+        st.error(f"Errore caricamento dati: {e}")
+        return None, None
+
+def save_all_data(username, n_people, pizza_on, meals): # al posto di save_db
+    try:
+        # 1. Upsert del profilo (Inserisce o aggiorna se lo username esiste)
+        prof_data = {
+            "username": username,
+            "n_people": n_people,
+            "pizza_enabled": pizza_on,
+            "default_lang": st.session_state.lang
+        }
+        res_prof = conn.table("profiles").upsert(prof_data, on_conflict="username").execute()
+        profile_id = res_prof.data[0]['id']
+
+        # 2. Cancella e reinserisce i pasti
+        conn.table("user_dinner").delete().eq("profile_id", profile_id).execute()
+        
         to_insert = []
         for i, m in enumerate(meals):
             to_insert.append({
-                "user_id": user,
+                "profile_id": profile_id,
                 "day_idx": i // 2,
                 "type": m["type"],
                 "prot": m["prot"],
@@ -118,13 +131,10 @@ def save_db(user, meals, success_msg):
                 "veg": m["veg"],
                 "locked": m.get("locked", False)
             })
-        
-        # 3. Tenta l'inserimento
-        res_ins = conn.table("user_dinner").insert(to_insert).execute()
-        st.success(success_msg)
+        conn.table("user_dinner").insert(to_insert).execute()
+        st.success("Tutto salvato!")
     except Exception as e:
-        # Questo ti dirà se l'errore è "401 Unauthorized" o "42P01 Table not found" ecc.
-        st.error(f"Dettaglio Errore: {str(e)}")
+        st.error(f"Errore salvataggio: {e}")
 
 # --- 3. LOGICA GENERAZIONE ---
 def generate_menu(pizza_on, current_meals=None):
@@ -134,12 +144,10 @@ def generate_menu(pizza_on, current_meals=None):
         targets["Pizza"] = 0
         targets["Legumes"] += 1
         
-    if current_meals:
+    if current_meals: # cambiata
         for m in current_meals:
-            if m.get("locked"):
-                p_type = m["prot"]
-                if p_type in targets and targets[p_type] > 0:
-                    targets[p_type] -= 1
+            if m.get("locked") and m["prot"] in targets and targets[m["prot"]] > 0:
+                targets[m["prot"]] -= 1
     
     for k, v in targets.items(): pool.extend([k] * v)
     random.shuffle(pool)
@@ -150,7 +158,7 @@ def generate_menu(pizza_on, current_meals=None):
         if current_meals and current_meals[i].get("locked"):
             meals.append(current_meals[i])
         else:
-            p = pool.pop()
+            p = pool.pop() if pool else random.choice(list(DATA["PROT"].keys()))
             is_lunch = i % 2 == 0
             if p in ["Pizza", "One-Pot Meal"]: c = "Included"
             else: c = random.choice(["Whole Grain Pasta", "Brown Rice", "Spelt", "Barley", "Gnocchi"] if is_lunch else ["Whole Grain Bread", "Potatoes", "Whole Grain Couscous"])
@@ -162,12 +170,17 @@ def update_meal(idx):
     v_key = st.session_state.menu_version
     new_p = st.session_state[f"p{idx}_{v_key}"]
     new_v = st.session_state[f"v{idx}_{v_key}"]
-    
     # Se non è pizza/piatto unico, prendi il carbo, altrimenti "Included"
     if new_p in ["Pizza", "One-Pot Meal"]:
         new_c = "Included"
     else:
-        new_c = st.session_state.get(f"c{idx}_{v_key}", st.session_state.meals[idx]["carbo"])
+        # Recupera il carboidrato attuale dallo stato
+        current_c = st.session_state.get(f"c{idx}_{v_key}", st.session_state.meals[idx]["carbo"])
+        # Se è "Included" ma ora serve un carboidrato vero, metti un default
+        if current_c == "Included":
+            new_c = "Whole Grain Pasta" if idx % 2 == 0 else "Whole Grain Bread"
+        else:
+            new_c = current_c
     
     # Aggiorna lo stato ufficiale
     st.session_state.meals[idx].update({
@@ -180,19 +193,36 @@ def update_meal(idx):
 def main():
     st.set_page_config(page_title="Menu", layout="wide")
 
-# --- INIZIALIZZAZIONE STATO ---
+    # --- INIZIALIZZAZIONE STATO ---
     if "lang" not in st.session_state: st.session_state.lang = "IT"
     if "menu_version" not in st.session_state: st.session_state.menu_version = 0
     if "swap_idx" not in st.session_state: st.session_state.swap_idx = None
+    if "n_people" not in st.session_state: st.session_state.n_people = 2
+    if "piz" not in st.session_state: st.session_state.piz = True
     
+    # Autenticazione
+    user_input = st.sidebar.text_input("Inserisci il tuo Nome Utente", "guest")
+         
     with st.sidebar:
         st.session_state.lang = st.radio("Language", ["IT", "EN"], horizontal=True)
         T = UI_TEXT[st.session_state.lang]
         st.header(T["settings"])
+
+        if st.button(T["load_btn"], use_container_width=True):
+            profile, db_meals = load_user_data(user_input)
+            if profile:
+                st.session_state.n_people = profile['n_people']
+                st.session_state.piz = profile['pizza_enabled']
+                st.session_state.lang = profile['default_lang']
+                if db_meals: st.session_state.meals = db_meals
+                st.rerun()
+                
+        n_people = st.number_input(T["people"], 1, 10, value=st.session_state.n_people)
+        st.session_state.n_people = n_people # Sync
         
-        user = st.text_input("User", "guest")
-        n_p = st.number_input(T["people"], 1, 10, 1)
-        piz = st.toggle(T["pizza_toggle"], True)
+        piz = st.toggle(T["pizza_toggle"], value=st.session_state.piz)
+        st.session_state.piz = piz # Sync
+        
         if st.button(T["gen"], use_container_width=True):
             current = st.session_state.get("meals")
             st.session_state.meals = generate_menu(piz, current)
@@ -201,16 +231,13 @@ def main():
             st.rerun()
             
         if st.button(T["save"], use_container_width=True):
-            save_db(user, st.session_state.meals, T["menu_saved"])
+            save_all_data(user_input, st.session_state.n_people, piz, st.session_state.meals)
             
     # Caricamento iniziale pasti
     if "meals" not in st.session_state:
-        db = load_db(user)
-        st.session_state.meals = db if db else generate_menu(piz)
-        st.session_state.swap_idx = None
+        st.session_state.meals = generate_menu(st.session_state.piz)
         
-    T = UI_TEXT[st.session_state.lang]
-    st.title(f"{T['title']} - {user}")
+    st.title(f"{T['title']} - {user_input}")
 
     # Pills & Guidelines
     c1, c2 = st.columns(2)
@@ -223,8 +250,8 @@ def main():
     cols = st.columns(len(DATA["PROT"]))
     for i, (k, v) in enumerate(DATA["PROT"].items()):
         current = all_p.count(k)
-        target = v["target"] if (k != "Pizza" or piz) else 0
-        if not piz and k == "Legumes": target = 4
+        target = v["target"] if (k != "Pizza" or st.session_state.piz) else 0
+        if not st.session_state.piz and k == "Legumes": target = 4
         
         # Logica Colore Target
         color = "normal" if current == target else "inverse" if current > target else "off"
@@ -245,12 +272,8 @@ def main():
                 active_swap = (st.session_state.swap_idx is not None)
                 
                 with cols[j].container(border=True):
+                    st.write(f"**{T['lunch' if j==0 else 'dinner']}**" if st.session_state.swap_idx != idx else f"### {T['swap']}")
                     
-                    if is_swapping:
-                        st.markdown("### 🔄 SPOSTA...")
-                    else:
-                        st.write(f"**{T['lunch' if j==0 else 'dinner']}**")
-
                     # Selettori
                     new_p = st.selectbox(
                         T["prot"], 
@@ -290,10 +313,10 @@ def main():
                     with st.expander(T["sugg"]):
                         g_p, g_c = DATA["PROT"][new_p]["gr"], DATA["CARBO"][new_c]["gr"]
                         u_p = "pz" if DATA["PROT"][new_p]["unit"] == "pz" else "g"
-                        st.write(f"**{T['total']} {n_p}:**")
-                        st.write(f"- {DATA['PROT'][new_p][st.session_state.lang]}: {g_p * n_p} {u_p}")
-                        if g_c > 0: st.write(f"- {DATA['CARBO'][new_c][st.session_state.lang]}: {g_c * n_p} g")
-                        st.write(f"- {T['veg']}: {200 * n_p} g")
+                        st.write(f"**{T['total']} {st.session_state.n_people}:**")
+                        st.write(f"- {DATA['PROT'][new_p][st.session_state.lang]}: {g_p * st.session_state.n_people} {u_p}")
+                        if g_c > 0: st.write(f"- {DATA['CARBO'][new_c][st.session_state.lang]}: {g_c * st.session_state.n_people} g")
+                        st.write(f"- {T['veg']}: {200 * st.session_state.n_people} g")
 
                     # Swap & Lock
                     sl1, sl2 = st.columns(2)
@@ -347,7 +370,7 @@ def main():
                 color: #31333f; 
                 font-size: 16px;
             ">
-                {T['shop_calc']} <b>{n_p}</b> {('persona' if n_p==1 else 'persone')}
+                {T['shop_calc']} <b>{st.session_state.n_people}</b> {('persona' if st.session_state.n_people==1 else 'persone')}
             </p>
         </div>
     """, unsafe_allow_html=True)
@@ -357,16 +380,16 @@ def main():
         # Prot
         p_info = DATA["PROT"][m["prot"]]
         basket[p_info[st.session_state.lang]] = basket.get(p_info[st.session_state.lang], {"q": 0, "u": p_info["unit"]})
-        basket[p_info[st.session_state.lang]]["q"] += p_info["gr"] * n_p
+        basket[p_info[st.session_state.lang]]["q"] += p_info["gr"] * st.session_state.n_people
         # Carbo
         if m["carbo"] != "Included":
             c_info = DATA["CARBO"][m["carbo"]]
             basket[c_info[st.session_state.lang]] = basket.get(c_info[st.session_state.lang], {"q": 0, "u": "g"})
-            basket[c_info[st.session_state.lang]]["q"] += c_info["gr"] * n_p
+            basket[c_info[st.session_state.lang]]["q"] += c_info["gr"] * st.session_state.n_people
         # Veg
         v_name = DATA["VEG"][m["veg"]][st.session_state.lang]
         basket[v_name] = basket.get(v_name, {"q": 0, "u": "g"})
-        basket[v_name]["q"] += 200 * n_p
+        basket[v_name]["q"] += 200 * st.session_state.n_people
 
     c1, c2 = st.columns(2)
     items = list(basket.items())
