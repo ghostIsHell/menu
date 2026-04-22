@@ -291,8 +291,10 @@ def main():
 
     # --- SHOPPING LIST STILIZZATA ---
     st.divider()
+
+    <h3>{T['shop']}</h3><p>{T['shop_calc']}    
     st.markdown(f"""<div style="background:#f0f2f6;padding:20px;border-radius:10px;border-left:5px solid #ff4b4b">
-        <h3>{T['shop']}</h3><p>{T['shop_calc']} <b>{n_p}</b> {'persona/person' if n_p==1 else 'persone/people'}</p></div>""", unsafe_allow_html=True)
+         <b>{n_p}</b> {'persona/person' if n_p==1 else 'persone/people'}</p></div>""", unsafe_allow_html=True)
     
     basket = {}
     for m in st.session_state.meals:
