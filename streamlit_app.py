@@ -217,6 +217,7 @@ def main():
 
         if st.button(T["load_btn"], use_container_width=True):
             profile, db_meals = load_user_data(user_input)
+            st.write(f"DEBUG: Risultato query profilo: {profile}")
             if profile:
                 st.session_state.n_people = profile['n_people']
                 st.session_state.piz = profile['pizza_enabled']
