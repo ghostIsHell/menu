@@ -292,7 +292,7 @@ def main():
     # --- SHOPPING LIST STILIZZATA ---
     st.divider()
 
-st.markdown(f"""
+    st.markdown(f"""
         <div style="background:#f0f2f6; padding:15px; border-radius:10px; border-left:5px solid #ff4b4b; margin-bottom:20px;">
             <p style="margin:0;">{T['shop_calc']} <b>{n_p}</b> {('persona' if n_p==1 else 'persone')}</p>
         </div>
