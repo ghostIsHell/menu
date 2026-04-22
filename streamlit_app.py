@@ -96,18 +96,21 @@ def load_user_data(username):
     try:
         # 1. Carica il profilo
         res_prof = conn.table("profiles").select("*").eq("username", username).execute()
+
+        if not res_prof.data or len(res_prof.data) == 0:
+            return None, None
+
+        profile = res_prof.data[0]
         
-        if res_prof.data:
-            profile = res_prof.data[0]
-            # 2. Carica i pasti legati a quel profilo ID
-            res_meals = conn.table("user_dinner").select("*").eq("profile_id", profile['id']).execute()
+        # 2. Carica i pasti legati a quel profilo ID
+        res_meals = conn.table("user_dinner").select("*").eq("profile_id", profile['id']).execute()
             
-            meals = None
-            if res_meals.data and len(res_meals.data) == 14:
-                meals = sorted(res_meals.data, key=lambda x: (x['day_idx'], x['type'] == 'Dinner'))
+        meals = None
+        if res_meals.data and len(res_meals.data) == 14:
+            meals = sorted(res_meals.data, key=lambda x: (x['day_idx'], x['type'] == 'Dinner'))
             
-            return profile, meals
-        return None, None
+        return profile, meals
+
     except Exception as e:
         st.error(f"Errore caricamento dati: {e}")
         return None, None
