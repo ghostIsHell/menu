@@ -88,8 +88,14 @@ conn = st.connection("supabase", type=SupabaseConnection,
                     key=st.secrets["connections"]["supabase"]["key"])
 
 def load_db(user):
-    res = conn.query("*", table="user_dinner", ttl=0).eq("user_id", user).execute()
-    return sorted(res.data, key=lambda x: (x['day_idx'], x['type'] == 'Dinner')) if len(res.data) == 14 else None
+    try:
+        res = conn.table("user_dinner").select("*").eq("user_id", user).execute()
+        if res.data and len(res.data) == 14:
+            return sorted(res.data, key=lambda x: (x['day_idx'], x['type'] == 'Dinner'))
+        return None
+    except Exception as e:
+        st.error(f"Errore caricamento: {e}")
+        return None
 
 def save_db(user, meals):
     try:
