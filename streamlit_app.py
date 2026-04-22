@@ -45,7 +45,12 @@ def get_current_season():
     return "Autumn"
 
 # --- 2. DATABASE LOGIC ---
-conn = st.connection("supabase", type=SupabaseConnection)
+conn = st.connection(
+    "supabase",
+    type=SupabaseConnection,
+    url=st.secrets["connections"]["supabase"]["url"],
+    key=st.secrets["connections"]["supabase"]["key"]
+)
 
 def load_menu_from_db(username):
     """Retrieves 14 meals for the given user from Supabase."""
