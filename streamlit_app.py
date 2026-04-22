@@ -64,7 +64,8 @@ UI_TEXT = {
         "lunch": "Pranzo", "dinner": "Cena", "prot": "Proteina", "carb": "Carboidrato", "veg": "Verdura",
         "sugg": "ℹ️ Suggerimenti e Grammi", "single": "Porzione Singola", "total": "Totale per",
         "swap": "↔️ SCAMBIA", "confirm": "✅ CONFERMA", "lock": "Blocca", "pizza_tip": "🍕 Tip: Impasto integrale + contorno di finocchi/insalata.",
-        "target_label": "Target"
+        "target_label": "Target",
+        "menu_saved": "✅ Menu salvato nel database!"
     },
     "EN": {
         "title": "Weekly Menu", "settings": "⚙️ Settings", "people": "People at the table",
@@ -78,7 +79,8 @@ UI_TEXT = {
         "lunch": "Lunch", "dinner": "Dinner", "prot": "Protein", "carb": "Carbohydrate", "veg": "Vegetables",
         "sugg": "ℹ️ Suggestions & Grams", "single": "Single Portion", "total": "Total for",
         "swap": "↔️ SWAP", "confirm": "✅ CONFIRM", "lock": "Lock", "pizza_tip": "🍕 Tip: Whole dough + side of fennel/salad.",
-        "target_label": "Target"
+        "target_label": "Target",
+        "menu_saved": "✅ Menu saved into database!"
     }
 }
 
@@ -97,27 +99,27 @@ def load_db(user):
         st.error(f"Errore caricamento: {e}")
         return None
 
-def save_db(user, meals):
+def save_db(user, meals, success_msg):
     try:
         # 1. Tenta la cancellazione
         res_del = conn.table("user_dinner").delete().eq("user_id", user).execute()
         
         # 2. Prepara i dati
-        to_insert = [
-            {
-                "user_id": user, 
-                "day_idx": i//2, 
-                "type": m["type"], 
-                "prot": m["prot"], 
-                "carbo": m["carbo"], 
-                "veg": m["veg"], 
+        to_insert = []
+        for i, m in enumerate(meals):
+            to_insert.append({
+                "user_id": user,
+                "day_idx": i // 2,
+                "type": m["type"],
+                "prot": m["prot"],
+                "carbo": m["carbo"],
+                "veg": m["veg"],
                 "locked": m.get("locked", False)
-            } for i, m in enumerate(meals)
-        ]
+            })
         
         # 3. Tenta l'inserimento
         res_ins = conn.table("user_dinner").insert(to_insert).execute()
-        
+        st.success(success_msg)
     except Exception as e:
         # Questo ti dirà se l'errore è "401 Unauthorized" o "42P01 Table not found" ecc.
         st.error(f"Dettaglio Errore: {str(e)}")
@@ -155,30 +157,32 @@ def generate_menu(pizza_on, current_meals=None):
 
 # --- 4. APP ---
 def main():
-    st.set_page_config(page_title="HealthMenu DB", layout="wide")
+    st.set_page_config(page_title="Menu", layout="wide")
+
+    if "lang" not in st.session_state: st.session_state.lang = "IT"
     
     with st.sidebar:
-        lang = st.radio("Language / Lingua", ["IT", "EN"], horizontal=True)
+        lang = st.radio("Language", ["IT", "EN"], horizontal=True)
         T = UI_TEXT[lang]
         st.header(T["settings"])
+        
         user = st.text_input("User", "guest")
         n_p = st.number_input(T["people"], 1, 10, 1)
         piz = st.toggle(T["pizza_toggle"], True)
         if st.button(T["gen"], use_container_width=True):
             current = st.session_state.get("meals")
             st.session_state.meals = generate_menu(piz, current)
-            save_db(user, st.session_state.meals)
             st.session_state.swap_idx = None
             st.rerun()
         if st.button(T["save"], use_container_width=True):
-            save_db(user, st.session_state.meals)
-            st.success(T["sync"])
+            save_db(user, st.session_state.meals, T["menu_saved"])
 
     if "meals" not in st.session_state:
         db = load_db(user)
         st.session_state.meals = db if db else generate_menu(piz)
         st.session_state.swap_idx = None
-
+        
+    T = UI_TEXT[st.session_state.lang]
     st.title(f"{T['title']} - {user}")
 
     # Pills & Guidelines
