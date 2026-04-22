@@ -83,7 +83,12 @@ UI_TEXT = {
 }
 
 # --- 2. DATABASE ---
-conn = st.connection("supabase", type=SupabaseConnection)
+conn = st.connection(
+    "supabase",
+    type=SupabaseConnection,
+    url=st.secrets["connections"]["supabase"]["url"],
+    key=st.secrets["connections"]["supabase"]["key"]
+)
 
 def load_user_data(username):
     try:
