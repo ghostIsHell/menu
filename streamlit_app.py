@@ -238,14 +238,13 @@ def main():
                             "locked": m["locked"]
                         })
                     st.session_state.menu_version += 1
-                    st.success(f"{T['welcomeback']} {user_input}!")
                     st.rerun()
+                    st.success(f"{T['welcomeback']} {user_input}!")
                 else:
                     st.sidebar.info("Profilo trovato, ma nessun pasto salvato.")
             else:
                 # st.write("Esito: Profilo NON trovato")
-                st.session_state.load_error = f"Errore: {user_input} non esiste."
-                st.sidebar.warning("UTENTE NON TROVATO")
+                st.sidebar.warning(f"Errore: utente {user_input} non trovato")
                 #st.toast(st.session_state.load_error, icon="❌")
                 
         n_people = st.number_input(T["people"], 1, 10, value=st.session_state.n_people)
