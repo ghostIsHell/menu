@@ -64,7 +64,8 @@ UI_TEXT = {
         "lunch": "Pranzo", "dinner": "Cena", "prot": "Proteina", "carb": "Carboidrato", "veg": "Verdura",
         "sugg": "ℹ️ Suggerimenti e Grammi", "total": "Totale per",
         "swap": "↔️ SCAMBIA", "confirm": "✅ CONFERMA", "lock": "Blocca", "pizza_tip": "🍕 Tip: Impasto integrale + contorno di finocchi/insalata.",
-        "target_label": "Target", "menu_saved": "✅ Profilo e Menu salvati!", "cancel": "🚫 ANNULLA", "load_btn": "📥 CARICA PROFILO"
+        "target_label": "Target", "menu_saved": "✅ Profilo e Menu salvati!", "cancel": "🚫 ANNULLA", "load_btn": "📥 CARICA PROFILO",
+        "welcomeback": "Bentornato"
     },
     "EN": {
         "title": "Weekly Menu", "settings": "⚙️ Settings", "people": "People at the table",
@@ -78,7 +79,8 @@ UI_TEXT = {
         "lunch": "Lunch", "dinner": "Dinner", "prot": "Protein", "carb": "Carbohydrate", "veg": "Vegetables",
         "sugg": "ℹ️ Suggestions & Grams", "total": "Total for",
         "swap": "↔️ SWAP", "confirm": "✅ CONFIRM", "lock": "Lock", "pizza_tip": "🍕 Tip: Whole dough + side of fennel/salad.",
-        "target_label": "Target", "menu_saved": "✅ Profile & Menu saved!", "cancel": "🚫 CANCEL", "load_btn": "📥 LOAD PROFILE"
+        "target_label": "Target", "menu_saved": "✅ Profile & Menu saved!", "cancel": "🚫 CANCEL", "load_btn": "📥 LOAD PROFILE",
+        "welcomeback": "Welcome Back"
     }
 }
 
@@ -230,10 +232,10 @@ def main():
                             "locked": m["locked"]
                         })
                     st.session_state.menu_version += 1 
-                    st.success(T["sync"])
+                    st.success(f"T['welcomeback'] {user_input}!")
                     st.rerun()
                 else:
-                    st.error("Utente non trovato")
+                    st.toast(f"Errore: {user_input} non esiste.", icon="❌")
                 
         n_people = st.number_input(T["people"], 1, 10, value=st.session_state.n_people)
         st.session_state.n_people = n_people # Sync
