@@ -2,6 +2,7 @@ import streamlit as st
 import random
 import pandas as pd
 import uuid
+import time
 from datetime import datetime
 from st_supabase_connection import SupabaseConnection
 
@@ -238,6 +239,7 @@ def main():
                             "locked": m["locked"]
                         })
                     st.session_state.menu_version += 1
+                    time.sleep(1)
                     st.toast(f"{T['welcomeback']} {user_input}!", icon="✅")
                     st.rerun()
                 else:
