@@ -113,7 +113,7 @@ def render_meal_card(idx, num_people):
         
         # Selectors
         prot_options = list(CONFIG["EMOJI_PROT"].keys())
-        new_p = st.selectbox("Protein", prot_options, index=prot_options.index(meal['prot']), key=f"p_{idx}_{st.session_state.sync_key}")
+        new_p = st.selectbox("Protein Source", prot_options, index=prot_options.index(meal['prot']), key=f"p_{idx}_{st.session_state.sync_key}")
         
         if new_p in ['Pizza', 'One-Pot Meal']:
             new_c = "Included"
@@ -126,16 +126,23 @@ def render_meal_card(idx, num_people):
         
         new_v = st.selectbox("Vegetables", ALL_VEG, index=ALL_VEG.index(meal['veg']), key=f"v_{idx}_{st.session_state.sync_key}")
 
-        # INFO & GRAMMATURE
-        with st.expander("ℹ️ Suggestions & Grams"):
-            p_gr = CONFIG["PORTIONS_GRAMS"].get(new_p, 0) * num_people
-            c_gr = CONFIG["PORTIONS_GRAMS"].get(new_c, 0) * num_people
-            v_gr = CONFIG["PORTIONS_GRAMS"].get("Vegetables", 200) * num_people
+        # --- INFO GRAMMATURE ---
+        with st.expander("ℹ️ Suggestions & Recommended Grams"):
+            ref_p = CONFIG["PORTIONS_GRAMS"].get(new_p, 0)
+            ref_c = CONFIG["PORTIONS_GRAMS"].get(new_c, 0) if new_c != "Included" else 0
+            ref_v = CONFIG["PORTIONS_GRAMS"].get("Vegetables", 200)
             
-            st.write(f"**Weights for {num_people} people:**")
-            st.write(f"- {new_p}: {p_gr}g/pcs")
-            if new_c != "Included": st.write(f"- {new_c}: {c_gr}g")
-            st.write(f"- {new_v}: {v_gr}g")
+            col_a, col_b = st.columns(2)
+            with col_a:
+                st.markdown("**1 Person (Ref):**")
+                st.caption(f"- Protein: {ref_p}g/pcs")
+                if new_c != "Included": st.caption(f"- Carb: {ref_c}g")
+                st.caption(f"- Veg: {ref_v}g")
+            with col_b:
+                st.markdown(f"**Total ({num_people} pers.):**")
+                st.write(f"- {ref_p * num_people}g/pcs")
+                if new_c != "Included": st.write(f"- {ref_c * num_people}g")
+                st.write(f"- {ref_v * num_people}g")
 
         if new_p != meal['prot'] or new_c != meal['carbo'] or new_v != meal['veg']:
             st.session_state.meals[idx].update({"prot": new_p, "carbo": new_c, "veg": new_v})
@@ -144,7 +151,6 @@ def render_meal_card(idx, num_people):
         c1, c2 = st.columns(2)
         meal['locked'] = c1.checkbox("Lock", value=meal['locked'], key=f"l_{idx}_{st.session_state.sync_key}")
         btn_label = "✅ CONFIRM" if (st.session_state.swap_idx is not None and not is_swapping) else "↔️ SWAP"
-        if is_swapping: btn_label = "🚫 CANCEL"
         
         if c2.button(btn_label, key=f"btn_{idx}_{st.session_state.sync_key}", use_container_width=True):
             if st.session_state.swap_idx is None: st.session_state.swap_idx = idx
@@ -166,9 +172,10 @@ def main():
     with st.sidebar:
         st.header("Settings")
         username = st.text_input("Username", value="guest_user")
-        num_people = st.number_input("Persone a tavola", 1, 10, 1)
+        num_persone_sidebar = st.number_input("Persone a tavola", 1, 10, 1)
         use_pizza = st.toggle("Include Pizza", value=True)
         
+        st.divider()
         if st.button("🔄 GENERATE & SAVE"):
             st.session_state.meals = generate_new_menu(use_pizza)
             save_menu_to_db(username, st.session_state.meals)
@@ -194,7 +201,7 @@ def main():
         - **Il Falso Amico:** Attenzione a birra, bibite o dolci con la pizza; sbilanciano il pasto.
         """)
 
-    # --- 📊 FREQUENZE SETTIMANALI (STATISTICS) ---
+    # --- 📊 FREQUENZE SETTIMANALI ---
     st.subheader("📊 Frequenze Settimanali")
     all_prots = [m['prot'] for m in st.session_state.meals]
     cols = st.columns(len(CONFIG["EMOJI_PROT"]))
@@ -208,7 +215,7 @@ def main():
         emoji = CONFIG["EMOJI_PROT"][name]
         
         if current == target:
-            color, arrow, label = "normal", "off", f"Target: {target}"
+            color, arrow, label = "normal", "off", f"↕ Target: {target}"
         elif current > target: 
             color, arrow, label = "inverse", "up", f"Target: {target}"
         else: 
@@ -221,19 +228,19 @@ def main():
     for i, day in enumerate(days):
         with st.expander(f"📅 {day.upper()}"):
             l, r = st.columns(2)
-            with l: render_meal_card(i*2, num_people)
-            with r: render_meal_card(i*2 + 1, num_people)
+            with l: render_meal_card(i*2, num_persone_sidebar)
+            with r: render_meal_card(i*2 + 1, num_persone_sidebar)
 
     # --- 🛒 SHOPPING LIST ---
     st.divider()
-    st.subheader("🛒 Weekly Shopping List")
+    st.subheader(f"🛒 Weekly Shopping List (Calcolata per {num_persone_sidebar} {'persona' if num_persone_sidebar == 1 else 'persone'})")
     
     shop_list = {}
     for m in st.session_state.meals:
         for item in [m['prot'], m['carbo'], m['veg']]:
             if item == "Included": continue
             key = "Vegetables" if item in ALL_VEG else item
-            qty = CONFIG["PORTIONS_GRAMS"].get(key, 0) * num_people
+            qty = CONFIG["PORTIONS_GRAMS"].get(key, 0) * num_persone_sidebar
             shop_list[key] = shop_list.get(key, 0) + qty
 
     s_col1, s_col2 = st.columns(2)
