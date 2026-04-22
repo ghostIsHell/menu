@@ -41,7 +41,7 @@ CONFIG = {
 ALL_VEG = sorted(list(set([v for sublist in CONFIG["VEG_SEASONAL"].values() for v in sublist])))
 CONFIG["ALL_CARBO"] = sorted(list(set(CONFIG["CARBO_LUNCH"] + CONFIG["CARBO_DINNER"])))
 
-# --- 2. DATABASE CONNECTION ---
+# --- 2. DATABASE LOGIC ---
 conn = st.connection(
     "supabase",
     type=SupabaseConnection,
@@ -126,7 +126,7 @@ def render_meal_card(idx, num_people):
         
         new_v = st.selectbox("Vegetables", ALL_VEG, index=ALL_VEG.index(meal['veg']), key=f"v_{idx}_{st.session_state.sync_key}")
 
-        # INFO & GRAMMATURE EXPANDER
+        # INFO & GRAMMATURE
         with st.expander("ℹ️ Suggestions & Grams"):
             p_gr = CONFIG["PORTIONS_GRAMS"].get(new_p, 0) * num_people
             c_gr = CONFIG["PORTIONS_GRAMS"].get(new_c, 0) * num_people
@@ -136,9 +136,7 @@ def render_meal_card(idx, num_people):
             st.write(f"- {new_p}: {p_gr}g/pcs")
             if new_c != "Included": st.write(f"- {new_c}: {c_gr}g")
             st.write(f"- {new_v}: {v_gr}g")
-            st.caption("Cooking Tip: Prefer steaming or grilling.")
 
-        # Update State
         if new_p != meal['prot'] or new_c != meal['carbo'] or new_v != meal['veg']:
             st.session_state.meals[idx].update({"prot": new_p, "carbo": new_c, "veg": new_v})
 
@@ -168,7 +166,7 @@ def main():
     with st.sidebar:
         st.header("Settings")
         username = st.text_input("Username", value="guest_user")
-        num_people = st.number_input("Number of People", 1, 10, 2)
+        num_people = st.number_input("Persone a tavola", 1, 10, 1)
         use_pizza = st.toggle("Include Pizza", value=True)
         
         if st.button("🔄 GENERATE & SAVE"):
@@ -187,10 +185,19 @@ def main():
 
     st.title(f"🥗 Weekly Menu for {username}")
 
-    # --- 📊 PROTEIN STATISTICS ---
-    st.subheader("📊 Protein Balance")
-    cols = st.columns(len(CONFIG["EMOJI_PROT"]))
+    # --- PILLS SECTION ---
+    with st.expander("📚 Pillole di Educazione Alimentare (Pizza e Piatti Unici)"):
+        st.markdown("""
+        - **La Pizza:** Equivale a una porzione abbondante di carboidrati + proteine (mozzarella) + grassi. Consumala **1 volta a settimana**.
+        - **Piatti Unici:** Pasta e fagioli, insalatone o panini sani sono sostituti validi. 
+        - **Regola d'oro:** Qualunque sia il sostituto, accompagnalo sempre con verdura extra per garantire fibre e sazietà.
+        - **Il Falso Amico:** Attenzione a birra, bibite o dolci con la pizza; sbilanciano il pasto.
+        """)
+
+    # --- 📊 FREQUENZE SETTIMANALI (STATISTICS) ---
+    st.subheader("📊 Frequenze Settimanali")
     all_prots = [m['prot'] for m in st.session_state.meals]
+    cols = st.columns(len(CONFIG["EMOJI_PROT"]))
     
     adj_targets = CONFIG["TARGET_PROT"].copy()
     if use_pizza: adj_targets["Pizza"] = 1
@@ -201,7 +208,7 @@ def main():
         emoji = CONFIG["EMOJI_PROT"][name]
         
         if current == target:
-            color, arrow, label = "normal", "off", f"↕ Target: {target}"
+            color, arrow, label = "normal", "off", f"Target: {target}"
         elif current > target: 
             color, arrow, label = "inverse", "up", f"Target: {target}"
         else: 
