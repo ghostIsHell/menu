@@ -243,7 +243,8 @@ def main():
                     st.session_state.load_error = f"Errore: {user_input} non esiste."
                     
                 if st.session_state.load_error:
-                    st.toast(st.session_state.load_error, icon="❌")
+                    st.sidebar.error(st.session_state.load_error)
+                    #st.toast(st.session_state.load_error, icon="❌")
                 
         n_people = st.number_input(T["people"], 1, 10, value=st.session_state.n_people)
         st.session_state.n_people = n_people # Sync
