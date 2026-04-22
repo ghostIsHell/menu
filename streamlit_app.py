@@ -126,7 +126,7 @@ def render_meal_card(idx, num_people):
         
         new_v = st.selectbox("Vegetables", ALL_VEG, index=ALL_VEG.index(meal['veg']), key=f"v_{idx}_{st.session_state.sync_key}")
 
-        # --- INFO GRAMMATURE ---
+        # SUGGESTIONS BOX
         with st.expander("ℹ️ Suggestions & Recommended Grams"):
             ref_p = CONFIG["PORTIONS_GRAMS"].get(new_p, 0)
             ref_c = CONFIG["PORTIONS_GRAMS"].get(new_c, 0) if new_c != "Included" else 0
@@ -134,13 +134,13 @@ def render_meal_card(idx, num_people):
             
             col_a, col_b = st.columns(2)
             with col_a:
-                st.markdown("**1 Person (Ref):**")
-                st.caption(f"- Protein: {ref_p}g/pcs")
-                if new_c != "Included": st.caption(f"- Carb: {ref_c}g")
-                st.caption(f"- Veg: {ref_v}g")
+                st.markdown("**Singola Porzione:**")
+                st.caption(f"- Proteina: {ref_p}g/pz")
+                if new_c != "Included": st.caption(f"- Carboidrato: {ref_c}g")
+                st.caption(f"- Verdura: {ref_v}g")
             with col_b:
-                st.markdown(f"**Total ({num_people} pers.):**")
-                st.write(f"- {ref_p * num_people}g/pcs")
+                st.markdown(f"**Per {num_people} {'Persona' if num_people == 1 else 'Persone'}:**")
+                st.write(f"- {ref_p * num_people}g/pz")
                 if new_c != "Included": st.write(f"- {ref_c * num_people}g")
                 st.write(f"- {ref_v * num_people}g")
 
@@ -170,36 +170,53 @@ def main():
     if 'swap_idx' not in st.session_state: st.session_state.swap_idx = None
 
     with st.sidebar:
-        st.header("Settings")
+        st.header("⚙️ Impostazioni")
         username = st.text_input("Username", value="guest_user")
         num_persone_sidebar = st.number_input("Persone a tavola", 1, 10, 1)
-        use_pizza = st.toggle("Include Pizza", value=True)
+        use_pizza = st.toggle("Includi Pizza Settimanale", value=True)
         
         st.divider()
-        if st.button("🔄 GENERATE & SAVE"):
+        if st.button("🔄 GENERA E SALVA", use_container_width=True):
             st.session_state.meals = generate_new_menu(use_pizza)
             save_menu_to_db(username, st.session_state.meals)
             st.rerun()
         
-        if st.button("💾 SAVE CHANGES"):
+        if st.button("💾 SALVA MODIFICHE", use_container_width=True):
             save_menu_to_db(username, st.session_state.meals)
-            st.success("Synced!")
+            st.success("Sincronizzato!")
 
     # Load data
     if 'meals' not in st.session_state:
         db_data = load_menu_from_db(username)
         st.session_state.meals = db_data if db_data else generate_new_menu(use_pizza)
 
-    st.title(f"🥗 Weekly Menu for {username}")
+    st.title(f"🥗 Menù Settimanale: {username}")
 
-    # --- PILLS SECTION ---
-    with st.expander("📚 Pillole di Educazione Alimentare (Pizza e Piatti Unici)"):
-        st.markdown("""
-        - **La Pizza:** Equivale a una porzione abbondante di carboidrati + proteine (mozzarella) + grassi. Consumala **1 volta a settimana**.
-        - **Piatti Unici:** Pasta e fagioli, insalatone o panini sani sono sostituti validi. 
-        - **Regola d'oro:** Qualunque sia il sostituto, accompagnalo sempre con verdura extra per garantire fibre e sazietà.
-        - **Il Falso Amico:** Attenzione a birra, bibite o dolci con la pizza; sbilanciano il pasto.
-        """)
+    # --- SECTION: PILLS & GUIDELINES ---
+    col_pill1, col_pill2 = st.columns(2)
+    
+    with col_pill1:
+        with st.expander("📚 Pillole di Educazione Alimentare"):
+            st.markdown("""
+            - **La Pizza:** Equivale a una porzione abbondante di carboidrati + proteine + grassi. Consumala **1 volta a settimana**.
+            - **Piatti Unici:** Pasta e fagioli o insalatone sono sostituti validi. 
+            - **Regola d'oro:** Accompagna sempre con verdura extra per garantire fibre e sazietà.
+            - **Il Falso Amico:** Attenzione a birra o bibite con la pizza; sbilanciano il pasto.
+            """)
+            
+    with col_pill2:
+        with st.expander("⚖️ Grammature Consigliate (Linee Guida)"):
+            st.markdown("""
+            **Porzioni standard per un adulto sano:**
+            * **Pasta/Riso/Cereali:** 80g
+            * **Pane:** 50g
+            * **Carne Bianca:** 100-120g
+            * **Pesce:** 150g
+            * **Legumi secchi:** 50g (o 150g cotti)
+            * **Uova:** 2 unità
+            * **Formaggio:** 50-100g (a seconda della stagionatura)
+            * **Verdura:** almeno 200g
+            """)
 
     # --- 📊 FREQUENZE SETTIMANALI ---
     st.subheader("📊 Frequenze Settimanali")
@@ -224,7 +241,7 @@ def main():
         cols[i].metric(label=f"{emoji} {name}", value=f"{current}", delta=label, delta_color=color, delta_arrow=arrow)
 
     # --- 📅 GRID RENDERING ---
-    days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+    days = ["Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato", "Domenica"]
     for i, day in enumerate(days):
         with st.expander(f"📅 {day.upper()}"):
             l, r = st.columns(2)
@@ -233,7 +250,16 @@ def main():
 
     # --- 🛒 SHOPPING LIST ---
     st.divider()
-    st.subheader(f"🛒 Weekly Shopping List (Calcolata per {num_persone_sidebar} {'persona' if num_persone_sidebar == 1 else 'persone'})")
+    
+    # Intestazione Stilizzata
+    st.markdown(f"""
+        <div style="background-color: #f0f2f6; padding: 20px; border-radius: 10px; border-left: 5px solid #ff4b4b; margin-bottom: 20px;">
+            <h2 style="margin: 0; color: #31333f;">🛒 Lista della Spesa</h2>
+            <p style="margin: 0; color: #555; font-weight: bold;">
+                Calcolata automaticamente per <span style="color: #ff4b4b;">{num_persone_sidebar} {'persona' if num_persone_sidebar == 1 else 'persone'}</span>
+            </p>
+        </div>
+    """, unsafe_allow_html=True)
     
     shop_list = {}
     for m in st.session_state.meals:
@@ -249,8 +275,14 @@ def main():
     
     for i, (name, total) in enumerate(items):
         target_col = s_col1 if i < half else s_col2
-        unit = "pcs" if name in ["Eggs", "Pizza"] else "g"
-        target_col.write(f"- **{name}**: {total}{unit}")
+        unit = "pz" if name in ["Eggs", "Pizza"] else "g"
+        # Mostriamo il totale in Kg se supera i 1000g per pulizia visiva
+        if unit == "g" and total >= 1000:
+            display_total = f"{total/1000:.2f} Kg"
+        else:
+            display_total = f"{total} {unit}"
+            
+        target_col.write(f"- **{name}**: {display_total}")
 
 if __name__ == "__main__":
     main()
