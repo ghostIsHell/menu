@@ -278,7 +278,7 @@ def get_grouped_shopping_list(meals, n_people, lang):
         carbo_key = m["carbo"]
         veg_key = m["veg"]
         # Se la chiave non esiste (es. è in italiano), cerchiamo di recuperarla o saltiamo
-        if prot_key not in DATA["PROT"] or carbo_key not in DATA["CARBO"] or veg_key not in DATA["VEG"]:
+        if prot_key not in DATA["PROT"] or (carbo_key not in DATA["CARBO"] and carbo_key != "Included") or veg_key not in DATA["VEG"]:
             continue
         # Calcolo Proteine
         p_info = DATA["PROT"][m["prot"]]
