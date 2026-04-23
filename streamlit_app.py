@@ -54,7 +54,7 @@ DATA = {
 
 UI_TEXT = {
 "IT": {
-        "auth_title": "🥗 Auth Menù Settimanale", "title": "Menù Settimanale", "settings": "⚙️ Impostazioni", "people": "Persone a tavola",
+        "auth_title": "🥗 Menù Settimanale", "title": "🥗 Menù Settimanale", "settings": "⚙️ Impostazioni", "people": "Persone a tavola",
         "pizza_toggle": "Includi Pizza Settimanale", "gen": "🔄 GENERA", "save": "💾 SALVA MODIFICHE",
         "sync": "Sincronizzato!", "pills": "📚 Pillole di Educazione Alimentare",
         "pills_txt": "- **Pizza:** 1 volta a settimana.\n- **Piatto Unico:** Pasta e fagioli, insalatone.\n- **Regola:** Sempre con verdura extra.",
@@ -70,7 +70,7 @@ UI_TEXT = {
         "clear": "Pulisci Lista Spesa"
     },
     "EN": {
-        "auth_title": "🥗 Weekly Menu Auth", "title": "Weekly Menu", "settings": "⚙️ Settings", "people": "People at the table",
+        "auth_title": "🥗 Weekly Menu", "title": "🥗 Weekly Menu", "settings": "⚙️ Settings", "people": "People at the table",
         "pizza_toggle": "Include Weekly Pizza", "gen": "🔄 GENERATE", "save": "💾 SAVE CHANGES",
         "sync": "Synced!", "pills": "📚 Nutritional Pills",
         "pills_txt": "- **Pizza:** Once a week.\n- **One-Pot Meal:** Pasta & beans, big salads.\n- **Rule:** Always add extra vegetables.",
@@ -95,9 +95,19 @@ conn = st.connection(
     key=st.secrets["connections"]["supabase"]["key"]
 )
 
+def change_lang():
+    # Il valore del widget con chiave "lang_selector" aggiorna direttamente lo stato
+    st.session_state.lang = st.session_state.lang_selector
+
 # --- AUTENTICAZIONE ---
 def render_auth_screen():
-    st.session_state.lang = st.radio("Language", ["IT", "EN"], horizontal=True)
+    st.radio(
+        "Language", 
+        ["IT", "EN"], 
+        horizontal=True, 
+        key="lang_selector", # Chiave univoca per il widget
+        on_change=change_lang, # Esegue la funzione al click
+    )
     T = UI_TEXT[st.session_state.lang]
     st.title(T['auth_title'])
     
@@ -452,7 +462,13 @@ def render_app_content(user_id, user_email, T):
         st.session_state.loaded_for_user = user_id
     # --- SIDEBAR SETTINGS ---
     with st.sidebar:
-        st.session_state.lang = st.radio("Language", ["IT", "EN"], horizontal=True)
+        st.radio(
+            "Language", 
+            ["IT", "EN"], 
+            horizontal=True, 
+            key="lang_selector", # Chiave univoca per il widget
+            on_change=change_lang, # Esegue la funzione al click
+        )
         T = UI_TEXT[st.session_state.lang]
         st.header(T["settings"])
 
@@ -477,7 +493,6 @@ def render_app_content(user_id, user_email, T):
         st.session_state.meals = generate_menu(st.session_state.piz)
 
     st.title(f"{T['title']}")
-    st.title(f"**{user_email}**")
 
     # Pills & Guidelines
     c1, c2 = st.columns(2)
@@ -529,6 +544,7 @@ def main():
         
         # Sidebar con Logout e Info Utente
         with st.sidebar:
+            st.markdown(f"#### {T['title']")
             st.write(f"👤 **{user_email}**")
             if st.button(T["logout"], type="primary"):
                 logout_user()
