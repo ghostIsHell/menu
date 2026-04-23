@@ -233,6 +233,110 @@ def get_grouped_shopping_list(meals, n_people, lang):
         
     return basket
 
+def render_menu_grid(T):
+    st.subheader(T.get("menu_title", "📅 Menu")) # O usa una chiave di UI_TEXT
+    
+    for i, day_name in enumerate(T["days"]):
+        with st.expander(f"📅 {day_name.upper()}"):
+            cols = st.columns(2)
+            for j in range(2):
+                idx = i * 2 + j
+                render_meal_card(idx, j, T)
+
+def render_meal_card(idx, col_idx, T):
+    """
+    idx: indice assoluto nel session_state.meals (0-13)
+    col_idx: 0 per pranzo, 1 per cena
+    """
+    m = st.session_state.meals[idx]
+    v_key = st.session_state.menu_version
+    is_swapping = (st.session_state.swap_idx == idx)
+    active_swap = (st.session_state.swap_idx is not None)
+
+    with st.container(border=True):
+        # Titolo della card
+        label = T['lunch' if col_idx == 0 else 'dinner']
+        st.write(f"**{label}**" if not is_swapping else f"### {T['swap']}")
+
+        # --- SELETTORI ---
+        new_p = st.selectbox(
+            T["prot"], 
+            list(DATA["PROT"].keys()), 
+            index=list(DATA["PROT"].keys()).index(m["prot"]), 
+            format_func=lambda x: DATA["PROT"][x][st.session_state.lang], 
+            key=f"p{idx}_{v_key}",
+            on_change=update_meal,
+            args=(idx,)
+        )
+
+        if new_p in ["Pizza", "One-Pot Meal"]:
+            new_c = "Included"
+            if new_p == "Pizza": st.warning(T["pizza_tip"])
+        else:
+            c_opts = [ck for ck in DATA["CARBO"].keys() if ck != "Included"]
+            c_idx = c_opts.index(m["carbo"]) if m["carbo"] in c_opts else 0
+            new_c = st.selectbox(
+                T["carb"], 
+                c_opts, 
+                index=c_idx, 
+                format_func=lambda x: DATA["CARBO"][x][st.session_state.lang], 
+                key=f"c{idx}_{v_key}",
+                on_change=update_meal,
+                args=(idx,)
+            )
+
+        new_v = st.selectbox(
+            T["veg"], 
+            list(DATA["VEG"].keys()), 
+            index=list(DATA["VEG"].keys()).index(m["veg"]), 
+            format_func=lambda x: DATA["VEG"][x][st.session_state.lang], 
+            key=f"v{idx}_{v_key}",
+            on_change=update_meal,
+            args=(idx,)
+        )
+
+        # --- GRAMMI DINAMICI ---
+        with st.expander(T["sugg"]):
+            g_p = DATA["PROT"][new_p]["gr"]
+            g_c = DATA["CARBO"][new_c]["gr"]
+            u_p = "pz" if DATA["PROT"][new_p]["unit"] == "pz" else "g"
+            st.write(f"**{T['total']} {st.session_state.n_people}:**")
+            st.write(f"- {DATA['PROT'][new_p][st.session_state.lang]}: {g_p * st.session_state.n_people} {u_p}")
+            if g_c > 0: 
+                st.write(f"- {DATA['CARBO'][new_c][st.session_state.lang]}: {g_c * st.session_state.n_people} g")
+            st.write(f"- {T['veg']}: {200 * st.session_state.n_people} g")
+
+        # --- SWAP & LOCK ---
+        sl1, sl2 = st.columns(2)
+        m["locked"] = sl1.checkbox(T["lock"], m["locked"], key=f"lk{idx}_{v_key}")
+
+        # Logica del Bottone Swap
+        if is_swapping:
+            btn_label, btn_type = T["cancel"], "secondary"
+        elif active_swap:
+            btn_label, btn_type = T["confirm"], "primary"
+        else:
+            btn_label, btn_type = T["swap"], "secondary"
+
+        if sl2.button(btn_label, key=f"sw{idx}_{v_key}", use_container_width=True, type=btn_type):
+            handle_swap_logic(idx, is_swapping)
+
+def handle_swap_logic(idx, is_swapping):
+    """Gestisce la logica di scambio separata per pulizia"""
+    if st.session_state.swap_idx is None:
+        st.session_state.swap_idx = idx
+        st.rerun()
+    elif is_swapping:
+        st.session_state.swap_idx = None
+        st.rerun()
+    else:
+        idx1, idx2 = st.session_state.swap_idx, idx
+        st.session_state.meals[idx1], st.session_state.meals[idx2] = \
+            st.session_state.meals[idx2], st.session_state.meals[idx1]
+        st.session_state.swap_idx = None
+        st.session_state.menu_version += 1 
+        st.rerun()
+
 def render_shopping_section(T):
     st.divider()
     st.subheader(T['shop'])
@@ -328,9 +432,6 @@ def main():
             current = st.session_state.get("meals")
             st.session_state.meals = generate_menu(piz, current)
             st.session_state.swap_idx = None
-            for key in list(st.session_state.keys()):
-                if key.startswith("shop_"):
-                    del st.session_state[key]
             st.session_state.menu_version += 1
             st.rerun()
             
@@ -364,97 +465,7 @@ def main():
         cols[i].metric(label=v[st.session_state.lang], value=current, delta=f"{T['target_label']}: {target}", delta_color=color, delta_arrow=arrow)
 
     # --- GRID ---
-    for i, day_name in enumerate(T["days"]):
-        with st.expander(f"📅 {day_name.upper()}"):
-            cols = st.columns(2)
-            for j in range(2):
-                idx = i*2 + j
-                m = st.session_state.meals[idx]
-                v_key = st.session_state.menu_version
-
-                is_swapping = (st.session_state.swap_idx == idx)
-                active_swap = (st.session_state.swap_idx is not None)
-                
-                with cols[j].container(border=True):
-                    st.write(f"**{T['lunch' if j==0 else 'dinner']}**" if st.session_state.swap_idx != idx else f"### {T['swap']}")
-                    
-                    # Selettori
-                    new_p = st.selectbox(
-                        T["prot"], 
-                        list(DATA["PROT"].keys()), 
-                        index=list(DATA["PROT"].keys()).index(m["prot"]), 
-                        format_func=lambda x: DATA["PROT"][x][st.session_state.lang], 
-                        key=f"p{idx}_{v_key}",
-                        on_change=update_meal,
-                        args=(idx,)
-                    )
-                    
-                    if new_p in ["Pizza", "One-Pot Meal"]:
-                        new_c = "Included"
-                        if new_p == "Pizza": st.warning(T["pizza_tip"])
-                    else:
-                        c_opts = [ck for ck in DATA["CARBO"].keys() if ck != "Included"]
-                        c_idx = c_opts.index(m["carbo"]) if m["carbo"] in c_opts else 0
-                        new_c = st.selectbox(T["carb"], 
-                                             c_opts, 
-                                             index=c_idx if m["carbo"] in c_opts else 0, 
-                                             format_func=lambda x: DATA["CARBO"][x][st.session_state.lang], 
-                                             key=f"c{idx}_{v_key}",
-                                             on_change=update_meal,
-                                             args=(idx,)
-                                            )
-                    
-                    new_v = st.selectbox(T["veg"], 
-                                         list(DATA["VEG"].keys()), 
-                                         index=list(DATA["VEG"].keys()).index(m["veg"]), 
-                                         format_func=lambda x: DATA["VEG"][x][st.session_state.lang], 
-                                         key=f"v{idx}_{v_key}",
-                                         on_change=update_meal,
-                                         args=(idx,)
-                                        )
-
-                    # Grammi dinamici
-                    with st.expander(T["sugg"]):
-                        g_p, g_c = DATA["PROT"][new_p]["gr"], DATA["CARBO"][new_c]["gr"]
-                        u_p = "pz" if DATA["PROT"][new_p]["unit"] == "pz" else "g"
-                        st.write(f"**{T['total']} {st.session_state.n_people}:**")
-                        st.write(f"- {DATA['PROT'][new_p][st.session_state.lang]}: {g_p * st.session_state.n_people} {u_p}")
-                        if g_c > 0: st.write(f"- {DATA['CARBO'][new_c][st.session_state.lang]}: {g_c * st.session_state.n_people} g")
-                        st.write(f"- {T['veg']}: {200 * st.session_state.n_people} g")
-
-                    # Swap & Lock
-                    sl1, sl2 = st.columns(2)
-                    m["locked"] = sl1.checkbox(T["lock"], m["locked"], key=f"lk{idx}_{v_key}")
-
-                    if is_swapping:
-                        btn_label = T["cancel"]
-                        btn_type = "secondary"
-                    elif active_swap:
-                        btn_label = T["confirm"]
-                        btn_type = "primary"
-                    else:
-                        btn_label = T["swap"]
-                        btn_type = "secondary"
-
-                    if sl2.button(btn_label, key=f"sw{idx}_{v_key}", use_container_width=True, type=btn_type):
-                        if st.session_state.swap_idx is None:
-                            # 1. Inizia lo scambio
-                            st.session_state.swap_idx = idx
-                            st.rerun()
-                        elif is_swapping:
-                            # 2. Annulla lo scambio
-                            st.session_state.swap_idx = None
-                            st.rerun()
-                        else:
-                            # 3. Esegui lo scambio tra idx e swap_idx
-                            idx1, idx2 = st.session_state.swap_idx, idx
-                            # Scambiamo i dati nel dizionario
-                            st.session_state.meals[idx1], st.session_state.meals[idx2] = \
-                            st.session_state.meals[idx2], st.session_state.meals[idx1]
-                            # Reset stato scambio e incremento versione per refresh widget
-                            st.session_state.swap_idx = None
-                            st.session_state.menu_version += 1 
-                            st.rerun()
+    render_menu_grid(T)
 
     # --- SHOPPING LIST STILIZZATA ---
     render_shopping_section(T)
