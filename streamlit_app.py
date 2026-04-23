@@ -233,7 +233,7 @@ def get_grouped_shopping_list(meals, n_people, lang):
         
     return basket
 
-def render_shopping_section():
+def render_shopping_section(T):
     st.divider()
     st.subheader(T['shop'])
 
@@ -454,6 +454,6 @@ def main():
                             st.rerun()
 
     # --- SHOPPING LIST STILIZZATA ---
-    render_shopping_section()
+    render_shopping_section(T)
 
 if __name__ == "__main__": main()
