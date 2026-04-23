@@ -321,13 +321,14 @@ def render_meal_card(idx, col_idx, T):
         # Titolo della card
         label = T['lunch' if col_idx == 0 else 'dinner']
         st.write(f"**{label}**" if not is_swapping else f"### {T['swap']}")
-
+        
+        prot_options = list(DATA["PROT"].keys())
         # Protezione: se il valore nel DB non è una chiave valida, usa la prima
         current_prot = m["prot"] if m["prot"] in prot_options else prot_options[0]
         # --- SELETTORI ---
         new_p = st.selectbox(
             T["prot"], 
-            list(DATA["PROT"].keys()), 
+            options=prot_options, 
             index=list(DATA["PROT"].keys()).index(current_prot), 
             format_func=lambda x: DATA["PROT"][x][st.session_state.lang], 
             key=f"p{idx}_{v_key}",
@@ -351,10 +352,11 @@ def render_meal_card(idx, col_idx, T):
                 args=(idx,)
             )
 
+        veg_options = list(DATA["VEG"].keys())
         current_veg = m["veg"] if m["veg"] in veg_options else veg_options[0]
         new_v = st.selectbox(
             T["veg"], 
-            list(DATA["VEG"].keys()), 
+            options=veg_options, 
             index=list(DATA["VEG"].keys()).index(current_veg), 
             format_func=lambda x: DATA["VEG"][x][st.session_state.lang], 
             key=f"v{idx}_{v_key}",
