@@ -246,7 +246,7 @@ def render_shopping_section(T):
     if st.button(T['clear'], use_container_width=True):
         for key in list(st.session_state.keys()):
             if key.startswith("shop_"):
-                del st.session_state[key]
+                st.session_state[key] = False
         st.rerun()
 
     # Otteniamo i dati calcolati
@@ -328,6 +328,9 @@ def main():
             current = st.session_state.get("meals")
             st.session_state.meals = generate_menu(piz, current)
             st.session_state.swap_idx = None
+            for key in list(st.session_state.keys()):
+                if key.startswith("shop_"):
+                    del st.session_state[key]
             st.session_state.menu_version += 1
             st.rerun()
             
