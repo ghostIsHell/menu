@@ -267,13 +267,19 @@ def update_meal(idx):
     })
 
 def get_grouped_shopping_list(meals, n_people, lang):
-    basket = {
+    basket = { # TODO: lan
         "🥩 Proteine": {},
         "🍞 Carboidrati": {},
         "🥦 Verdure": {}
     }
     
     for m in meals:
+        prot_key = m["prot"]
+        carbo_key = m["carbo"]
+        veg_key = m["veg"]
+        # Se la chiave non esiste (es. è in italiano), cerchiamo di recuperarla o saltiamo
+        if prot_key not in DATA["PROT"] or carbo_key not in DATA["CARBO"] or veg_key not in DATA["VEG"]:
+            continue
         # Calcolo Proteine
         p_info = DATA["PROT"][m["prot"]]
         name_p = p_info[lang]
