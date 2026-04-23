@@ -54,7 +54,7 @@ DATA = {
 
 UI_TEXT = {
 "IT": {
-        "title": "Menù Settimanale", "settings": "⚙️ Impostazioni", "people": "Persone a tavola",
+        "auth_title": "🥗 Auth Menù Settimanale", "title": "Menù Settimanale", "settings": "⚙️ Impostazioni", "people": "Persone a tavola",
         "pizza_toggle": "Includi Pizza Settimanale", "gen": "🔄 GENERA", "save": "💾 SALVA MODIFICHE",
         "sync": "Sincronizzato!", "pills": "📚 Pillole di Educazione Alimentare",
         "pills_txt": "- **Pizza:** 1 volta a settimana.\n- **Piatto Unico:** Pasta e fagioli, insalatone.\n- **Regola:** Sempre con verdura extra.",
@@ -65,12 +65,12 @@ UI_TEXT = {
         "lunch": "Pranzo", "dinner": "Cena", "prot": "Proteina", "carb": "Carboidrato", "veg": "Verdura",
         "sugg": "ℹ️ Suggerimenti e Grammi", "total": "Totale per",
         "swap": "↔️ SCAMBIA", "confirm": "✅ CONFERMA", "lock": "Blocca", "pizza_tip": "🍕 Tip: Impasto integrale + contorno di finocchi/insalata.",
-        "target_label": "Target", "menu_saved": "✅ Profilo e Menu salvati!", "cancel": "🚫 ANNULLA", "load_btn": "📥 CARICA PROFILO",
-        "welcomeback": "Bentornato",
+        "target_label": "Target", "menu_saved": "✅ Profilo e Menu salvati!", "cancel": "🚫 ANNULLA", "load_btn": "📥 CARICA PROFILO", "saved": "Tutto salvato!",
+        "succes_reg": "Registrazione completata! Ora puoi accedere.", "welcomeback": "Bentornato. Accesso Eseguito!", "pwd_req": "Password (min. 6 caratteri)", "acc_create": "Crea Account", "logout":"Esci",
         "clear": "Pulisci Lista Spesa"
     },
     "EN": {
-        "title": "Weekly Menu", "settings": "⚙️ Settings", "people": "People at the table",
+        "auth_title": "🥗 Weekly Menu Auth", "title": "Weekly Menu", "settings": "⚙️ Settings", "people": "People at the table",
         "pizza_toggle": "Include Weekly Pizza", "gen": "🔄 GENERATE", "save": "💾 SAVE CHANGES",
         "sync": "Synced!", "pills": "📚 Nutritional Pills",
         "pills_txt": "- **Pizza:** Once a week.\n- **One-Pot Meal:** Pasta & beans, big salads.\n- **Rule:** Always add extra vegetables.",
@@ -81,8 +81,8 @@ UI_TEXT = {
         "lunch": "Lunch", "dinner": "Dinner", "prot": "Protein", "carb": "Carbohydrate", "veg": "Vegetables",
         "sugg": "ℹ️ Suggestions & Grams", "total": "Total for",
         "swap": "↔️ SWAP", "confirm": "✅ CONFIRM", "lock": "Lock", "pizza_tip": "🍕 Tip: Whole dough + side of fennel/salad.",
-        "target_label": "Target", "menu_saved": "✅ Profile & Menu saved!", "cancel": "🚫 CANCEL", "load_btn": "📥 LOAD PROFILE",
-        "welcomeback": "Welcome Back",
+        "target_label": "Target", "menu_saved": "✅ Profile & Menu saved!", "cancel": "🚫 CANCEL", "load_btn": "📥 LOAD PROFILE", "saved": "All saved!",
+        "succes_reg": "Registration complete! You can now log in.", "welcomeback": "Welcome Back. You're logged in!", "pwd_req": "Password (min. 6 char)", "acc_create": "Create Account", "logout":"Logout",
         "clear": "Clear Shopping List"
     }
 }
@@ -95,10 +95,62 @@ conn = st.connection(
     key=st.secrets["connections"]["supabase"]["key"]
 )
 
-def load_user_data(username):
+# --- AUTENTICAZIONE ---
+def render_auth_screen():
+    st.session_state.lang = st.radio("Language", ["IT", "EN"], horizontal=True)
+    T = UI_TEXT[st.session_state.lang]
+    st.title(T['auth_title'])
+    
+    tab1, tab2 = st.tabs(["Accedi", "Registrati"]) # TODO: T[]
+    
+    with tab1:
+        with st.form("login"):
+            email = st.text_input("Email")
+            pwd = st.text_input("Password", type="password")
+            if st.form_submit_button("Entra", use_container_width=True):
+                user = login_user(email, pwd)
+                if user:
+                    st.success(T['welcomeback'])
+                    time.sleep(1)
+                    st.rerun()
+
+    with tab2:
+        with st.form("signup"):
+            new_email = st.text_input("Email")
+            new_pwd = st.text_input(T['pwd_req'], type="password")
+            if st.form_submit_button(T['acc_create'], use_container_width=True):
+                signup_user(new_email, new_pwd, T)
+
+# Funzione per il Login
+def login_user(email, password):
+    try:
+        res = conn.auth.sign_in_with_password({"email": email, "password": password})
+        return res
+    except Exception as e:
+        st.error(f"Login Error: {e}")
+        return None
+
+# Funzione per la Registrazione
+def signup_user(email, password, T):
+    try:
+        res = conn.auth.sign_up({"email": email, "password": password})
+        st.success(T['succes_reg'])
+        return res
+    except Exception as e:
+        st.error(f"Registration Error: {e}")
+        return None
+
+# Funzione per il Logout
+def logout_user():
+    conn.auth.sign_out()
+    for key in list(st.session_state.keys()):
+        del st.session_state[key]
+    st.rerun()
+
+def load_user_data(user_id):
     try:
         # 1. Carica il profilo
-        res_prof = conn.table("profiles").select("*").eq("username", username).execute()
+        res_prof = conn.table("profiles").select("*").eq("id", user_id).execute()
 
         if not res_prof.data or len(res_prof.data) == 0:
             return None, None
@@ -106,7 +158,7 @@ def load_user_data(username):
         profile = res_prof.data[0]
         
         # 2. Carica i pasti legati a quel profilo ID
-        res_meals = conn.table("user_dinner").select("*").eq("profile_id", profile['id']).execute()
+        res_meals = conn.table("user_dinner").select("*").eq("profile_id", user_id).execute()
             
         meals = None
         if res_meals.data and len(res_meals.data) == 14:
@@ -115,28 +167,30 @@ def load_user_data(username):
         return profile, meals
 
     except Exception as e:
-        st.error(f"Errore caricamento dati: {e}")
+        st.error(f"Load Data Errore: {e}")
         return None, None
 
-def save_all_data(username, n_people, pizza_on, meals): # al posto di save_db
+def save_all_data(user_id, user_email, n_people, pizza_on, meals, T):
     try:
         # 1. Upsert del profilo (Inserisce o aggiorna se lo username esiste)
         prof_data = {
-            "username": username,
+            "id": user_id,
+            "username": user_email,
             "n_people": n_people,
             "pizza_enabled": pizza_on,
             "default_lang": st.session_state.lang
         }
-        res_prof = conn.table("profiles").upsert(prof_data, on_conflict="username").execute()
-        profile_id = res_prof.data[0]['id']
+        
+        # Upsert basato sulla PRIMARY KEY (id)
+        conn.table("profiles").upsert(prof_data).execute()
 
-        # 2. Cancella e reinserisce i pasti
-        conn.table("user_dinner").delete().eq("profile_id", profile_id).execute()
+        # 2. Reset e inserimento pasti
+        conn.table("user_dinner").delete().eq("profile_id", user_id).execute()
         
         to_insert = []
         for i, m in enumerate(meals):
             to_insert.append({
-                "profile_id": profile_id,
+                "profile_id": user_id,
                 "day_idx": i // 2,
                 "type": m["type"],
                 "prot": m["prot"],
@@ -145,9 +199,9 @@ def save_all_data(username, n_people, pizza_on, meals): # al posto di save_db
                 "locked": m.get("locked", False)
             })
         conn.table("user_dinner").insert(to_insert).execute()
-        st.success("Tutto salvato!")
+        st.success(T['saved'])
     except Exception as e:
-        st.error(f"Errore salvataggio: {e}")
+        st.error(f"Save Error: {e}")
 
 # --- 3. LOGICA GENERAZIONE ---
 def generate_menu(pizza_on, current_meals=None):
@@ -234,7 +288,7 @@ def get_grouped_shopping_list(meals, n_people, lang):
     return basket
 
 def render_menu_grid(T):
-    st.subheader(T.get("menu_title", "📅 Menu")) # O usa una chiave di UI_TEXT
+    st.subheader(T.get("menu_title")) # O usa una chiave di UI_TEXT
     
     for i, day_name in enumerate(T["days"]):
         with st.expander(f"📅 {day_name.upper()}"):
@@ -373,54 +427,34 @@ def render_shopping_section(T):
                 # Checkbox
                 st.checkbox(f"**{name}** ({val})", key=f"shop_{cat}_{name}")
 
-# --- 4. APP ---
-def main():
-    st.set_page_config(page_title="Menu", layout="wide")
-
+def render_app_content(user_id, user_email, T):
     # --- INIZIALIZZAZIONE STATO ---
-    if "lang" not in st.session_state: st.session_state.lang = "IT"
     if "menu_version" not in st.session_state: st.session_state.menu_version = 0
     if "swap_idx" not in st.session_state: st.session_state.swap_idx = None
     if "n_people" not in st.session_state: st.session_state.n_people = 2
     if "piz" not in st.session_state: st.session_state.piz = True
-    
-    # Autenticazione
-    user_input = st.sidebar.text_input("Inserisci il tuo Nome Utente", "guest")
-         
+
+    # --- CARICAMENTO AUTOMATICO DATI (Solo la prima volta) ---
+    if "loaded_for_user" not in st.session_state or st.session_state.loaded_for_user != user_id:
+        profile, db_meals = load_user_data(user_id)
+        if profile:
+            st.session_state.n_people = profile['n_people']
+            st.session_state.piz = profile['pizza_enabled']
+            st.session_state.lang = profile['default_lang']
+            if db_meals:
+                st.session_state.meals = [{
+                    "type": m["type"], 
+                    "prot": m["prot"], 
+                    "carbo": m["carbo"], 
+                    "veg": m["veg"], 
+                    "locked": m["locked"]
+                } for m in db_meals]
+        st.session_state.loaded_for_user = user_id
+    # --- SIDEBAR SETTINGS ---
     with st.sidebar:
         st.session_state.lang = st.radio("Language", ["IT", "EN"], horizontal=True)
         T = UI_TEXT[st.session_state.lang]
         st.header(T["settings"])
-
-        if st.button(T["load_btn"], use_container_width=True):
-            #st.write(f"--- Tentativo caricamento per: {user_input} ---")
-            profile, db_meals = load_user_data(user_input)
-            # st.write(f"DEBUG: Risultato query profilo: {profile}")
-            if profile:
-                # st.write("Esito: Profilo TROVATO")
-                st.session_state.n_people = profile['n_people']
-                st.session_state.piz = profile['pizza_enabled']
-                st.session_state.lang = profile['default_lang']
-                if db_meals:
-                    st.session_state.meals = []
-                    for m in db_meals:
-                        st.session_state.meals.append({
-                            "type": m["type"],
-                            "prot": m["prot"],
-                            "carbo": m["carbo"],
-                            "veg": m["veg"],
-                            "locked": m["locked"]
-                        })
-                    st.session_state.menu_version += 1
-                    st.sidebar.success(f"{T['welcomeback']} {user_input}!")
-                    time.sleep(1)
-                    st.rerun()
-                else:
-                    st.sidebar.info("Profilo trovato, ma nessun pasto salvato.")
-            else:
-                # st.write("Esito: Profilo NON trovato")
-                st.sidebar.warning(f"Errore: utente {user_input} non trovato")
-                #st.toast(st.session_state.load_error, icon="❌")
 
         n_people = st.number_input(T["people"], 1, 10, value=st.session_state.n_people)
         st.session_state.n_people = n_people # Sync
@@ -436,13 +470,14 @@ def main():
             st.rerun()
             
         if st.button(T["save"], use_container_width=True):
-            save_all_data(user_input, st.session_state.n_people, piz, st.session_state.meals)
+            save_all_data(user_id, user_email, st.session_state.n_people, piz, st.session_state.meals, T)
             
     # Caricamento iniziale pasti
     if "meals" not in st.session_state:
         st.session_state.meals = generate_menu(st.session_state.piz)
-        
-    st.title(f"{T['title']} - {user_input}")
+
+    st.title(f"{T['title']}")
+    st.title(f"**{user_email}**")
 
     # Pills & Guidelines
     c1, c2 = st.columns(2)
@@ -469,5 +504,36 @@ def main():
 
     # --- SHOPPING LIST STILIZZATA ---
     render_shopping_section(T)
+
+# --- 4. APP ---
+def main():
+    if "lang" not in st.session_state: st.session_state.lang = "IT"
+    T = UI_TEXT[st.session_state.lang]
+
+    st.set_page_config(page_title="Menu", layout="wide")
+    
+    # Autenticazione
+    # Controllo Sessione Supabase
+    try:
+        session = conn.auth.get_session()
+    except:
+        session = None
+
+    if not session:
+        # Se non c'è sessione, mostra solo il login
+        render_auth_screen()
+    else:
+        # Se l'utente è autenticato, mostra l'app
+        user_id = session.user.id
+        user_email = session.user.email
+        
+        # Sidebar con Logout e Info Utente
+        with st.sidebar:
+            st.write(f"👤 **{user_email}**")
+            if st.button(T["logout"], type="primary"):
+                logout_user()
+            st.divider()
+            
+        render_app_content(user_id, user_email, T)
 
 if __name__ == "__main__": main()
