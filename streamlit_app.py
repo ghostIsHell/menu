@@ -544,7 +544,7 @@ def main():
         
         # Sidebar con Logout e Info Utente
         with st.sidebar:
-            st.markdown(f"#### {T['title']")
+            st.markdown(f"#### {T['title']}")
             st.write(f"👤 **{user_email}**")
             if st.button(T["logout"], type="primary"):
                 logout_user()
