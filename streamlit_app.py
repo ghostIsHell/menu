@@ -66,7 +66,8 @@ UI_TEXT = {
         "sugg": "ℹ️ Suggerimenti e Grammi", "total": "Totale per",
         "swap": "↔️ SCAMBIA", "confirm": "✅ CONFERMA", "lock": "Blocca", "pizza_tip": "🍕 Tip: Impasto integrale + contorno di finocchi/insalata.",
         "target_label": "Target", "menu_saved": "✅ Profilo e Menu salvati!", "cancel": "🚫 ANNULLA", "load_btn": "📥 CARICA PROFILO",
-        "welcomeback": "Bentornato"
+        "welcomeback": "Bentornato",
+        "clear": "Pulisci Lista Spesa"
     },
     "EN": {
         "title": "Weekly Menu", "settings": "⚙️ Settings", "people": "People at the table",
@@ -81,7 +82,8 @@ UI_TEXT = {
         "sugg": "ℹ️ Suggestions & Grams", "total": "Total for",
         "swap": "↔️ SWAP", "confirm": "✅ CONFIRM", "lock": "Lock", "pizza_tip": "🍕 Tip: Whole dough + side of fennel/salad.",
         "target_label": "Target", "menu_saved": "✅ Profile & Menu saved!", "cancel": "🚫 CANCEL", "load_btn": "📥 LOAD PROFILE",
-        "welcomeback": "Welcome Back"
+        "welcomeback": "Welcome Back",
+        "clear": "Clear Shopping List"
     }
 }
 
@@ -199,6 +201,73 @@ def update_meal(idx):
         "carbo": new_c, 
         "veg": new_v
     })
+
+def get_grouped_shopping_list(meals, n_people, lang):
+    basket = {
+        "🥩 Proteine": {},
+        "🍞 Carboidrati": {},
+        "🥦 Verdure": {}
+    }
+    
+    for m in meals:
+        # Calcolo Proteine
+        p_info = DATA["PROT"][m["prot"]]
+        name_p = p_info[lang]
+        if name_p not in basket["🥩 Proteine"]:
+            basket["🥩 Proteine"][name_p] = {"q": 0, "u": p_info["unit"]}
+        basket["🥩 Proteine"][name_p]["q"] += p_info["gr"] * n_people
+
+        # Calcolo Carboidrati
+        if m["carbo"] != "Included":
+            c_info = DATA["CARBO"][m["carbo"]]
+            name_c = c_info[lang]
+            if name_c not in basket["🍞 Carboidrati"]:
+                basket["🍞 Carboidrati"][name_c] = {"q": 0, "u": "g"}
+            basket["🍞 Carboidrati"][name_c]["q"] += c_info["gr"] * n_people
+
+        # Calcolo Verdure
+        v_name = DATA["VEG"][m["veg"]][lang]
+        if v_name not in basket["🥦 Verdure"]:
+            basket["🥦 Verdure"][v_name] = {"q": 0, "u": "g"}
+        basket["🥦 Verdure"][v_name]["q"] += 200 * n_people
+        
+    return basket
+
+def render_shopping_section():
+    st.divider()
+    st.subheader(T['shop'])
+
+    # Verifica se ci sono pasti, altrimenti esce
+    if not st.session_state.meals:
+        st.info("Nessun pasto selezionato.")
+        return
+
+    # Bottone di reset
+    if st.button(T['clear'], use_container_width=True):
+        for key in list(st.session_state.keys()):
+            if key.startswith("shop_"):
+                del st.session_state[key]
+        st.rerun()
+
+    # Otteniamo i dati calcolati
+    shopping_data = get_grouped_shopping_list(
+        st.session_state.meals, 
+        st.session_state.n_people, 
+        st.session_state.lang
+    )
+
+    # Visualizzazione a 3 colonne
+    cols = st.columns(3)
+    for idx, (cat, items) in enumerate(shopping_data.items()):
+        with cols[idx]:
+            st.markdown(f"#### {cat}")
+            for name, info in items.items():
+                q, u = info["q"], info["u"]
+                # Formattazione Peso
+                val = f"{q/1000:.2f} Kg" if (u=="g" and q>=1000) else f"{int(q)} {u}"
+                
+                # Checkbox
+                st.checkbox(f"**{name}** ({val})", key=f"shop_{cat}_{name}")
 
 # --- 4. APP ---
 def main():
@@ -385,50 +454,6 @@ def main():
                             st.rerun()
 
     # --- SHOPPING LIST STILIZZATA ---
-    st.divider()
-
-    st.subheader(T['shop'])
-
-    st.markdown(f"""
-        <div style="
-            background-color: #f0f2f6; 
-            padding: 15px; 
-            border-radius: 10px; 
-            border-left: 5px solid #ff4b4b; 
-            margin-bottom: 20px;
-        ">
-            <p style="
-                margin: 0; 
-                color: #31333f; 
-                font-size: 16px;
-            ">
-                {T['shop_calc']} <b>{st.session_state.n_people}</b> {('persona' if st.session_state.n_people==1 else 'persone')}
-            </p>
-        </div>
-    """, unsafe_allow_html=True)
-    
-    basket = {}
-    for m in st.session_state.meals:
-        # Prot
-        p_info = DATA["PROT"][m["prot"]]
-        basket[p_info[st.session_state.lang]] = basket.get(p_info[st.session_state.lang], {"q": 0, "u": p_info["unit"]})
-        basket[p_info[st.session_state.lang]]["q"] += p_info["gr"] * st.session_state.n_people
-        # Carbo
-        if m["carbo"] != "Included":
-            c_info = DATA["CARBO"][m["carbo"]]
-            basket[c_info[st.session_state.lang]] = basket.get(c_info[st.session_state.lang], {"q": 0, "u": "g"})
-            basket[c_info[st.session_state.lang]]["q"] += c_info["gr"] * st.session_state.n_people
-        # Veg
-        v_name = DATA["VEG"][m["veg"]][st.session_state.lang]
-        basket[v_name] = basket.get(v_name, {"q": 0, "u": "g"})
-        basket[v_name]["q"] += 200 * st.session_state.n_people
-
-    c1, c2 = st.columns(2)
-    items = list(basket.items())
-    for i, (name, info) in enumerate(items):
-        col = c1 if i < len(items)/2 else c2
-        q, u = info["q"], info["u"]
-        val = f"{q/1000:.2f} Kg" if (u=="g" and q>=1000) else f"{q} {u}"
-        col.write(f"- **{name}**: {val}")
+    render_shopping_section()
 
 if __name__ == "__main__": main()
