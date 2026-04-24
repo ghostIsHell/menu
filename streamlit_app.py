@@ -201,10 +201,11 @@ def save_all_data(user_id, user_email, n_people, pizza_on, meals, T):
         
         to_insert = []
         for i, m in enumerate(meals):
+            is_lunch = (i % 2 == 0)
             to_insert.append({
                 "profile_id": user_id,
                 "day_idx": i // 2,
-                "type": m["type"],
+                "type": "Lunch" if is_lunch else "Dinner",
                 "prot": m["prot"],
                 "carbo": m["carbo"],
                 "veg": m["veg"],
