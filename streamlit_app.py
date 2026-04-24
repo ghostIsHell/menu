@@ -98,6 +98,8 @@ conn = st.connection(
 def change_lang():
     # Il valore del widget con chiave "lang_selector" aggiorna direttamente lo stato
     st.session_state.lang = st.session_state.lang_selector
+    st.session_state.menu_version += 1
+    st.session_state.swap_idx = None
 
 # --- AUTENTICAZIONE ---
 def render_auth_screen():
