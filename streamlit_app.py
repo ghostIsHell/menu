@@ -235,30 +235,42 @@ def generate_menu(pizza_on, current_meals=None):
     
     meals = []
     veg_keys = list(DATA["VEG"].keys())
+    
     for i in range(14):
         if current_meals and current_meals[i].get("locked"):
             meals.append(current_meals[i])
         else:
             is_lunch = i % 2 == 0
-            last_meal = meals[i-1] if i > 0 else None
 
             # Cerchiamo una proteina nel pool diversa dall'ultima usata
             p = None
-            for idx, candidate in enumerate(pool):
-                if not last_meal or candidate != last_meal["prot"]:
-                    p = pool.pop(idx)
-                    break
+            # Proviamo con memoria 3, poi 2, poi 1
+            for window_size in [3, 2, 1]:
+                recent_prots = [m["prot"] for m in meals[-window_size:]] if i > 0 else []
+                for idx, candidate in enumerate(pool):
+                    if candidate not in recent_prots:
+                        p = pool.pop(idx)
+                        break
+                if p: break # Trovata!
                     
-            # Se non troviamo match nel pool (raro), prendiamo una random non consecutiva
-            if not p:
-                p = random.choice([k for k in DATA["PROT"].keys() if not last_meal or k != last_meal["prot"]])
+            # Fallback estremo: se proprio non c'è scelta, prendi il primo del pool
+            if not p and pool:
+                p = pool.pop(0)
+            elif not p:
+                p = random.choice(list(DATA["PROT"].keys()))
 
             if p in ["Pizza", "One-Pot Meal"]: c = "Included"
             else: c = random.choice(["Whole Grain Pasta", "Brown Rice", "Spelt", "Barley", "Gnocchi"] if is_lunch else ["Whole Grain Bread", "Potatoes", "Whole Grain Couscous"])
             
-            # Cerchiamo una verdura diversa dall'ultima
-            available_veg = [v for v in veg_keys if not last_meal or v != last_meal["veg"]]
-            v = random.choice(available_veg)
+            # --- VERDURA CON VINCOLI DECRESCENTI ---
+            v = None
+            for window_size in [3, 2, 1]:
+                recent_vegs = [m["veg"] for m in meals[-window_size:]] if i > 0 else []
+                available_veg = [veg for veg in veg_keys if veg not in recent_vegs]
+                if available_veg:
+                    v = random.choice(available_veg)
+                    break
+            if not v: v = random.choice(veg_keys)
             
             meals.append({"type": "Lunch" if is_lunch else "Dinner", "prot": p, "carbo": c, "veg": v, "locked": False})
     return meals
