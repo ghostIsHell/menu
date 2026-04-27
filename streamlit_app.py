@@ -223,8 +223,9 @@ def generate_menu(pizza_on, current_meals=None):
     if not pizza_on:
         targets["Pizza"] = 0
         targets["Legumes"] += 1
-        
-    if current_meals: # cambiata
+
+    # Sottraiamo le proteine dei pasti "bloccati" dal pool
+    if current_meals:
         for m in current_meals:
             if m.get("locked") and m["prot"] in targets and targets[m["prot"]] > 0:
                 targets[m["prot"]] -= 1
@@ -238,11 +239,28 @@ def generate_menu(pizza_on, current_meals=None):
         if current_meals and current_meals[i].get("locked"):
             meals.append(current_meals[i])
         else:
-            p = pool.pop() if pool else random.choice(list(DATA["PROT"].keys()))
             is_lunch = i % 2 == 0
+            last_meal = meals[i-1] if i > 0 else None
+
+            # Cerchiamo una proteina nel pool diversa dall'ultima usata
+            p = None
+            for idx, candidate in enumerate(pool):
+                if not last_meal or candidate != last_meal["prot"]:
+                    p = pool.pop(idx)
+                    break
+                    
+            # Se non troviamo match nel pool (raro), prendiamo una random non consecutiva
+            if not p:
+                p = random.choice([k for k in DATA["PROT"].keys() if not last_meal or k != last_meal["prot"]])
+
             if p in ["Pizza", "One-Pot Meal"]: c = "Included"
             else: c = random.choice(["Whole Grain Pasta", "Brown Rice", "Spelt", "Barley", "Gnocchi"] if is_lunch else ["Whole Grain Bread", "Potatoes", "Whole Grain Couscous"])
-            meals.append({"type": "Lunch" if is_lunch else "Dinner", "prot": p, "carbo": c, "veg": random.choice(veg_keys), "locked": False})
+            
+            # Cerchiamo una verdura diversa dall'ultima
+            available_veg = [v for v in veg_keys if not last_meal or v != last_meal["veg"]]
+            v = random.choice(available_veg)
+            
+            meals.append({"type": "Lunch" if is_lunch else "Dinner", "prot": p, "carbo": c, "veg": v, "locked": False})
     return meals
 
 def update_meal(idx):
