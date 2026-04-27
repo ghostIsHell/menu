@@ -486,9 +486,11 @@ def render_app_content(user_id, user_email, T):
     if "loaded_for_user" not in st.session_state or st.session_state.loaded_for_user != user_id:
         profile, db_meals = load_user_data(user_id)
         if profile:
-            st.session_state.n_people = profile['n_people']
-            st.session_state.piz = profile['pizza_enabled']
-            st.session_state.lang = profile['default_lang']
+            st.session_state.n_people = profile.get('n_people', 2)
+            st.session_state.piz = profile.get('pizza_enabled', True)
+            # Se la lingua caricata è diversa da quella attuale, aggiornala
+            if profile.get('default_lang') != st.session_state.lang:
+                st.session_state.lang = profile['default_lang']
             if db_meals:
                 st.session_state.meals = [{
                     "type": m["type"], 
@@ -576,10 +578,9 @@ def init_session_state():
 
 # --- 4. APP ---
 def main():
+    st.set_page_config(page_title="Menu", layout="wide", page_icon="🥗")
     init_session_state()
     T = UI_TEXT[st.session_state.lang]
-
-    st.set_page_config(page_title="Menu", layout="wide")
     
     # Autenticazione
     # Controllo Sessione Supabase
