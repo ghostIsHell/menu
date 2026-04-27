@@ -55,7 +55,7 @@ DATA = {
 UI_TEXT = {
 "IT": {
         "auth_title": "🥗 Menù Settimanale", "title": "🥗 Menù Settimanale", "settings": "⚙️ Impostazioni", "people": "Persone a tavola",
-        "pizza_toggle": "Includi Pizza Settimanale", "gen": "🔄 GENERA", "save": "💾 SALVA MODIFICHE",
+        "pizza_toggle": "Includi Pizza Settimanale", "gen": "🔄 GENERA", "save": "💾 SALVA MODIFICHE", "copy": "📋 COPIA MENÙ TESTUALE", "copy_here": "Copia da qui:", "copy_info": "Clicca sull'icona in alto a destra nel riquadro per copiare tutto!",
         "sync": "Sincronizzato!", "pills": "📚 Pillole di Educazione Alimentare",
         "pills_txt": "- **Pizza:** 1 volta a settimana.\n- **Piatto Unico:** Pasta e fagioli, insalatone.\n- **Regola:** Sempre con verdura extra.",
         "guide": "⚖️ Grammature Consigliate",
@@ -71,7 +71,7 @@ UI_TEXT = {
     },
     "EN": {
         "auth_title": "🥗 Weekly Menu", "title": "🥗 Weekly Menu", "settings": "⚙️ Settings", "people": "People at the table",
-        "pizza_toggle": "Include Weekly Pizza", "gen": "🔄 GENERATE", "save": "💾 SAVE CHANGES",
+        "pizza_toggle": "Include Weekly Pizza", "gen": "🔄 GENERATE", "save": "💾 SAVE CHANGES", "copy": "📋 COPY TEXT MENÙ", "copy_here": "Copy from here:", "copy_info": "💡 Click the icon in the top right of the box to copy everything!",
         "sync": "Synced!", "pills": "📚 Nutritional Pills",
         "pills_txt": "- **Pizza:** Once a week.\n- **One-Pot Meal:** Pasta & beans, big salads.\n- **Rule:** Always add extra vegetables.",
         "guide": "⚖️ Portion Guidelines",
@@ -100,6 +100,27 @@ def change_lang():
     st.session_state.lang = st.session_state.lang_selector
     st.session_state.menu_version += 1
     st.session_state.swap_idx = None
+
+def get_menu_text_format(meals, T):
+    """Trasforma la lista dei pasti in una stringa leggibile per il copia-incolla"""
+    output = f"📅 {T['title'].upper()} 🥗\n\n"
+    
+    for i, day_name in enumerate(T["days"]):
+        output += f"--- {day_name.upper()} ---\n"
+        
+        # Pranzo
+        m_l = meals[i*2]
+        output += f"☀️ {T['lunch']}: {DATA['PROT'][m_l['prot']][st.session_state.lang]} + "
+        output += f"{DATA['CARBO'][m_l['carbo']][st.session_state.lang] if m_l['carbo'] != 'Included' else ''} + "
+        output += f"{DATA['VEG'][m_l['veg']][st.session_state.lang]}\n"
+        
+        # Cena
+        m_d = meals[i*2 + 1]
+        output += f"🌙 {T['dinner']}: {DATA['PROT'][m_d['prot']][st.session_state.lang]} + "
+        output += f"{DATA['CARBO'][m_d['carbo']][st.session_state.lang] if m_d['carbo'] != 'Included' else ''} + "
+        output += f"{DATA['VEG'][m_d['veg']][st.session_state.lang]}\n\n"
+    
+    return output
 
 # --- AUTENTICAZIONE ---
 def render_auth_screen():
@@ -527,6 +548,13 @@ def render_app_content(user_id, user_email, T):
             
         if st.button(T["save"], use_container_width=True):
             save_all_data(user_id, user_email, st.session_state.n_people, piz, st.session_state.meals, T)
+        st.divider()
+        if st.button(T["copy"], use_container_width=True):
+            menu_string = get_menu_text_format(st.session_state.meals, T)
+            # Mostriamo un'area di testo che l'utente può copiare facilmente
+            st.code(menu_string, language="text")
+            st.info(T["copy_info"])
+        
             
     # Caricamento iniziale pasti
     if not st.session_state.get("meals"):
