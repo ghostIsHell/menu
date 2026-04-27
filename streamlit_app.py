@@ -529,7 +529,7 @@ def render_app_content(user_id, user_email, T):
             save_all_data(user_id, user_email, st.session_state.n_people, piz, st.session_state.meals, T)
             
     # Caricamento iniziale pasti
-    if "meals" not in st.session_state:
+    if not st.session_state.get("meals"):
         st.session_state.meals = generate_menu(st.session_state.piz)
 
     st.title(f"{T['title']}")
