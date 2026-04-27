@@ -482,12 +482,6 @@ def render_shopping_section(T):
                 st.checkbox(f"**{name}** ({val})", key=f"shop_{cat}_{name}")
 
 def render_app_content(user_id, user_email, T):
-    # --- INIZIALIZZAZIONE STATO ---
-    if "menu_version" not in st.session_state: st.session_state.menu_version = 0
-    if "swap_idx" not in st.session_state: st.session_state.swap_idx = None
-    if "n_people" not in st.session_state: st.session_state.n_people = 2
-    if "piz" not in st.session_state: st.session_state.piz = True
-
     # --- CARICAMENTO AUTOMATICO DATI (Solo la prima volta) ---
     if "loaded_for_user" not in st.session_state or st.session_state.loaded_for_user != user_id:
         profile, db_meals = load_user_data(user_id)
@@ -564,9 +558,25 @@ def render_app_content(user_id, user_email, T):
     # --- SHOPPING LIST STILIZZATA ---
     render_shopping_section(T)
 
+def init_session_state():
+    """Inizializza tutte le variabili di stato necessarie all'avvio"""
+    defaults = {
+        "lang": "IT",
+        "menu_version": 0,
+        "swap_idx": None,
+        "n_people": 2,
+        "piz": True,
+        "loaded_for_user": None, # Per gestire il caricamento dati da DB
+        "meals": []              # Lista pasti vuota inizialmente
+    }
+    
+    for key, value in defaults.items():
+        if key not in st.session_state:
+            st.session_state[key] = value
+
 # --- 4. APP ---
 def main():
-    if "lang" not in st.session_state: st.session_state.lang = "IT"
+    init_session_state()
     T = UI_TEXT[st.session_state.lang]
 
     st.set_page_config(page_title="Menu", layout="wide")
