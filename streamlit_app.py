@@ -30,26 +30,38 @@ DATA = {
         "Included": {"IT": "🥡 Incluso", "EN": "🥡 Included", "gr": 0}
     },
     "VEG": {
-        "Broccoli": {"IT": "🥦 Broccoli", "EN": "🥦 Broccoli"},
-        "Cauliflower": {"IT": "🥦 Cavolfiore", "EN": "🥦 Cauliflower"},
-        "Fennel": {"IT": "🥗 Finocchi", "EN": "🥗 Fennel"},
-        "Spinach": {"IT": "🍃 Spinaci", "EN": "🍃 Spinach"},
-        "Chard": {"IT": "🍃 Bietole", "EN": "🍃 Chard"},
-        "Artichokes": {"IT": "🎍 Carciofi", "EN": "🎍 Artichokes"},
-        "Pumpkin": {"IT": "🎃 Zucca", "EN": "🎃 Pumpkin"},
-        "Asparagus": {"IT": "🎋 Asparagi", "EN": "🎋 Asparagus"},
-        "Peas": {"IT": "🫛 Piselli", "EN": "🫛 Peas"},
-        "Broad Beans": {"IT": "🫛 Fave", "EN": "🫛 Broad Beans"},
-        "Zucchini": {"IT": "🥒 Zucchine", "EN": "🥒 Zucchini"},
-        "Salad": {"IT": "🥬 Insalata", "EN": "🥬 Salad"},
-        "Tomatoes": {"IT": "🍅 Pomodori", "EN": "🍅 Tomatoes"},
-        "Peppers": {"IT": "🫑 Peperoni", "EN": "🫑 Peppers"},
-        "Eggplants": {"IT": "🍆 Melanzane", "EN": "🍆 Eggplants"},
-        "Green Beans": {"IT": "🥗 Fagiolini", "EN": "🥗 Green Beans"},
-        "Cucumbers": {"IT": "🥒 Cetrioli", "EN": "🥒 Cucumbers"},
-        "Mushrooms": {"IT": "🍄 Funghi", "EN": "🍄 Mushrooms"},
-        "Carrot": {"IT": "🥕 Carote", "EN": "🥕 Carrots"}
-    }
+        # --- WINTER ---
+        "Broccoli":      {"IT": "🥦 Broccoli",      "EN": "🥦 Broccoli",      "seasons": ["winter", "autumn"]},
+        "Cauliflower":   {"IT": "🥦 Cavolfiore",     "EN": "🥦 Cauliflower",   "seasons": ["winter", "autumn"]},
+        "Fennel":        {"IT": "🥗 Finocchi",        "EN": "🥗 Fennel",        "seasons": ["winter", "autumn"]},
+        "Spinach":       {"IT": "🍃 Spinaci",         "EN": "🍃 Spinach",       "seasons": ["winter", "spring"]},
+        "Chard":         {"IT": "🍃 Bietole",         "EN": "🍃 Chard",         "seasons": ["winter", "spring"]},
+        "Artichokes":    {"IT": "🎍 Carciofi",        "EN": "🎍 Artichokes",    "seasons": ["winter", "spring"]},
+        "Pumpkin":       {"IT": "🎃 Zucca",           "EN": "🎃 Pumpkin",       "seasons": ["winter", "autumn"]},
+        "Cabbage":       {"IT": "🥬 Cavolo",          "EN": "🥬 Cabbage",       "seasons": ["winter"]},
+        "Leeks":         {"IT": "🌿 Porri",           "EN": "🌿 Leeks",         "seasons": ["winter", "autumn"]},
+        # --- SPRING ---
+        "Asparagus":     {"IT": "🎋 Asparagi",        "EN": "🎋 Asparagus",     "seasons": ["spring"]},
+        "Radishes":      {"IT": "🌸 Ravanelli",       "EN": "🌸 Radishes",      "seasons": ["spring"]},
+        # --- SUMMER ---
+        "Zucchini":      {"IT": "🥒 Zucchine",        "EN": "🥒 Zucchini",      "seasons": ["summer", "spring"]},
+        "Tomatoes":      {"IT": "🍅 Pomodori",         "EN": "🍅 Tomatoes",      "seasons": ["summer"]},
+        "Peppers":       {"IT": "🫑 Peperoni",         "EN": "🫑 Peppers",       "seasons": ["summer"]},
+        "Eggplants":     {"IT": "🍆 Melanzane",        "EN": "🍆 Eggplants",     "seasons": ["summer"]},
+        "Cucumbers":     {"IT": "🥒 Cetrioli",         "EN": "🥒 Cucumbers",     "seasons": ["summer"]},
+        "Green Beans":   {"IT": "🥗 Fagiolini",        "EN": "🥗 Green Beans",   "seasons": ["summer", "spring"]},
+        # --- ALL YEAR ---
+        "Salad":         {"IT": "🥬 Insalata",         "EN": "🥬 Salad",         "seasons": ["winter", "spring", "summer", "autumn"]},
+        "Mushrooms":     {"IT": "🍄 Funghi",           "EN": "🍄 Mushrooms",     "seasons": ["winter", "spring", "summer", "autumn"]},
+        "Carrot":        {"IT": "🥕 Carote",           "EN": "🥕 Carrots",       "seasons": ["winter", "spring", "summer", "autumn"]},
+    },
+        "LEGUMES_SIDE": {
+        "Peas":          {"IT": "🫛 Piselli",          "EN": "🫛 Peas",          "seasons": ["spring"]},
+        "Broad Beans":   {"IT": "🫛 Fave",             "EN": "🫛 Broad Beans",   "seasons": ["spring"]},
+        "Chickpeas":     {"IT": "🫘 Ceci",             "EN": "🫘 Chickpeas",     "seasons": ["winter", "spring", "summer", "autumn"]},
+        "Lentils":       {"IT": "🫘 Lenticchie",       "EN": "🫘 Lentils",       "seasons": ["winter", "autumn"]},
+        "Cannellini":    {"IT": "🫘 Cannellini",       "EN": "🫘 Cannellini",    "seasons": ["winter", "spring", "summer", "autumn"]},
+    },
 }
 
 UI_TEXT = {
@@ -144,6 +156,11 @@ MYTHS_AND_CUR = {
     ]
 }
 
+SEASON_LABELS = {
+    "IT": {"winter": "❄️ Inverno", "spring": "🌸 Primavera", "summer": "☀️ Estate", "autumn": "🍂 Autunno"},
+    "EN": {"winter": "❄️ Winter",  "spring": "🌸 Spring",    "summer": "☀️ Summer",  "autumn": "🍂 Autumn"},
+}
+
 def get_supabase_client():
     if "supabase_client" not in st.session_state:
         from supabase import create_client
@@ -151,6 +168,28 @@ def get_supabase_client():
         key = st.secrets["connections"]["supabase"]["key"]
         st.session_state.supabase_client = create_client(url, key)
     return st.session_state.supabase_client
+
+def get_current_season():
+    month = datetime.now().month
+    if month in [12, 1, 2]:   return "winter"
+    elif month in [3, 4, 5]:  return "spring"
+    elif month in [6, 7, 8]:  return "summer"
+    else:                     return "autumn"
+
+def render_season_selector():
+    lang = st.session_state.lang
+    season_options = ["winter", "spring", "summer", "autumn"]
+    st.selectbox(
+        "🌍 " + ("Stagione" if lang == "IT" else "Season"),
+        options=season_options,
+        index=season_options.index(st.session_state.season),
+        format_func=lambda x: SEASON_LABELS[lang][x],
+        key="season_selector",
+        on_change=lambda: st.session_state.update({"season": st.session_state.season_selector})
+    )
+    auto = get_current_season()
+    if st.session_state.season != auto:
+        st.caption(f"⚠️ Auto: {SEASON_LABELS[lang][auto]}")
     
 def change_lang():
     # Il valore del widget con chiave "lang_selector" aggiorna direttamente lo stato
@@ -300,6 +339,7 @@ def save_all_data(user_id, user_email, n_people, pizza_on, meals, T):
                 "prot": m["prot"],
                 "carbo": m["carbo"],
                 "veg": m["veg"],
+                "legume_side": m.get("legume_side"),
                 "locked": m.get("locked", False)
             })
         conn.table("user_dinner").insert(to_insert).execute()
@@ -309,6 +349,18 @@ def save_all_data(user_id, user_email, n_people, pizza_on, meals, T):
 
 # --- 3. LOGICA GENERAZIONE ---
 def generate_menu(pizza_on, current_meals=None):
+    season = st.session_state.get("season", get_current_season())
+
+    # Seasonal vegetable pool
+    seasonal_veg = [k for k, v in DATA["VEG"].items() if season in v["seasons"]]
+    if not seasonal_veg:
+        seasonal_veg = list(DATA["VEG"].keys())
+
+    # Seasonal legume side pool
+    seasonal_leg_side = [k for k, v in DATA["LEGUMES_SIDE"].items() if season in v["seasons"]]
+    if not seasonal_leg_side:
+        seasonal_leg_side = list(DATA["LEGUMES_SIDE"].keys())
+    
     pool = []
     targets = {k: v["target"] for k, v in DATA["PROT"].items()}
     if not pizza_on:
@@ -321,50 +373,95 @@ def generate_menu(pizza_on, current_meals=None):
             if m.get("locked") and m["prot"] in targets and targets[m["prot"]] > 0:
                 targets[m["prot"]] -= 1
     
-    for k, v in targets.items(): pool.extend([k] * v)
+    for k, v in targets.items():
+        pool.extend([k] * v)
     random.shuffle(pool)
+
+    # Legume side: assign to ~3 meals where protein is NOT already legumes
+    # We'll decide per-meal after protein assignment
+    leg_side_budget = 3  # times per week as side dish
     
     meals = []
-    veg_keys = list(DATA["VEG"].keys())
+    leg_side_used = 0
     
     for i in range(14):
         if current_meals and current_meals[i].get("locked"):
             meals.append(current_meals[i])
-        else:
-            is_lunch = i % 2 == 0
-
-            # Cerchiamo una proteina nel pool diversa dall'ultima usata
-            p = None
-            # Proviamo con memoria 3, poi 2, poi 1
-            for window_size in [3, 2, 1]:
-                recent_prots = [m["prot"] for m in meals[-window_size:]] if i > 0 else []
-                for idx, candidate in enumerate(pool):
-                    if candidate not in recent_prots:
-                        p = pool.pop(idx)
-                        break
-                if p: break # Trovata!
-                    
-            # Fallback estremo: se proprio non c'è scelta, prendi il primo del pool
-            if not p and pool:
-                p = pool.pop(0)
-            elif not p:
-                p = random.choice(list(DATA["PROT"].keys()))
-
-            if p in ["Pizza", "One-Pot Meal"]: c = "Included"
-            else: c = random.choice(["Whole Grain Pasta", "Brown Rice", "Spelt", "Barley", "Gnocchi"] if is_lunch else ["Whole Grain Bread", "Potatoes", "Whole Grain Couscous"])
-            
-            # --- VERDURA CON VINCOLI DECRESCENTI ---
-            v = None
-            for window_size in [3, 2, 1]:
-                recent_vegs = [m["veg"] for m in meals[-window_size:]] if i > 0 else []
-                available_veg = [veg for veg in veg_keys if veg not in recent_vegs]
-                if available_veg:
-                    v = random.choice(available_veg)
+            if current_meals[i].get("legume_side"):
+                leg_side_used += 1
+            continue
+        is_lunch = i % 2 == 0
+        # --- PROTEIN ---
+        # Cerchiamo una proteina nel pool diversa dall'ultima usata
+        p = None
+        # Proviamo con memoria 3, poi 2, poi 1
+        for window_size in [3, 2, 1]:
+            recent_prots = [m["prot"] for m in meals[-window_size:]] if i > 0 else []
+            for idx, candidate in enumerate(pool):
+                if candidate not in recent_prots:
+                    p = pool.pop(idx)
                     break
-            if not v: v = random.choice(veg_keys)
+            if p: break # Trovata!
+                    
+        # Fallback estremo: se proprio non c'è scelta, prendi il primo del pool
+        if not p and pool:
+            p = pool.pop(0)
+        elif not p:
+            p = random.choice(list(DATA["PROT"].keys()))
+
+        # --- CARBO ---
+
+        if p in ["Pizza", "One-Pot Meal"]: 
+            c = "Included"
+        else: 
+            c = random.choice(
+                ["Whole Grain Pasta", "Brown Rice", "Spelt", "Barley", "Gnocchi"] 
+                if is_lunch else 
+                ["Whole Grain Bread", "Potatoes", "Whole Grain Couscous"]
+            )
             
-            meals.append({"type": "Lunch" if is_lunch else "Dinner", "prot": p, "carbo": c, "veg": v, "locked": False})
+        # --- VEGETABLE (seasonal) ---
+        # --- VERDURA CON VINCOLI DECRESCENTI ---
+        v = None
+        for window_size in [3, 2, 1]:
+            recent_vegs = [m["veg"] for m in meals[-window_size:]] if i > 0 else []
+            available_veg = [veg for veg in seasonal_veg if veg not in recent_vegs]
+            if available_veg:
+                v = random.choice(available_veg)
+                break
+        if not v: 
+            v = random.choice(seasonal_veg)
+
+        # --- LEGUME SIDE (optional, not if protein is already legumes) ---
+        legume_side = None
+        if leg_side_used < leg_side_budget and p != "Legumes" and random.random() < 0.4:
+            legume_side = random.choice(seasonal_leg_side)
+            leg_side_used += 1
+        
+        meals.append({
+            "type": "Lunch" if is_lunch else "Dinner",
+            "prot": p, "carbo": c, "veg": v,
+            "legume_side": legume_side,
+            "locked": False
+        })
     return meals
+
+# --- UPDATED: format_func for vegetable selectboxes (with ⚠️ for out-of-season) ---
+def veg_label(key, lang):
+    season = st.session_state.get("season", get_current_season())
+    info = DATA["VEG"][key]
+    label = info[lang]
+    if season not in info["seasons"]:
+        label = f"⚠️ {label}"
+    return label
+    
+def legume_side_label(key, lang):
+    season = st.session_state.get("season", get_current_season())
+    info = DATA["LEGUMES_SIDE"][key]
+    label = info[lang]
+    if season not in info["seasons"]:
+        label = f"⚠️ {label}"
+    return label
 
 def update_meal(idx):
     # Recupera i valori dai widget usando le chiavi temporanee
@@ -427,9 +524,7 @@ def get_grouped_shopping_list(meals, n_people, lang):
         
     return basket
 
-def render_menu_grid(T):
-    st.subheader(T.get("menu_title")) # O usa una chiave di UI_TEXT
-    
+def render_menu_grid(T):    
     for i, day_name in enumerate(T["days"]):
         with st.expander(f"📅 {day_name.upper()}"):
             cols = st.columns(2)
@@ -493,6 +588,24 @@ def render_meal_card(idx, col_idx, T):
             on_change=update_meal,
             args=(idx,)
         )
+
+        # Legume side dish (optional)
+        leg_side_options = ["None"] + list(DATA["LEGUMES_SIDE"].keys())
+        current_leg = m.get("legume_side") or "None"
+        if current_leg not in leg_side_options:
+            current_leg = "None"
+
+        new_leg = st.selectbox(
+            "🫘 " + ("Legume (contorno)" if st.session_state.lang == "IT" else "Legume (side)"),
+            options=leg_side_options,
+            index=leg_side_options.index(current_leg),
+            format_func=lambda x: "—" if x == "None" else legume_side_label(x, st.session_state.lang),
+            key=f"leg{idx}_{v_key}",
+            on_change=update_meal,
+            args=(idx,)
+        )
+        # Store it back (update_meal handles prot/carbo/veg, add legume_side here)
+        st.session_state.meals[idx]["legume_side"] = None if new_leg == "None" else new_leg
 
         # --- GRAMMI DINAMICI ---
         with st.expander(T["sugg"]):
@@ -614,7 +727,8 @@ def render_app_content(user_id, user_email, T):
                     "type": m["type"], 
                     "prot": m["prot"], 
                     "carbo": m["carbo"], 
-                    "veg": m["veg"], 
+                    "veg": m["veg"],
+                    "legume_side": m.get("legume_side"),
                     "locked": m["locked"]
                 } for m in db_meals]
         st.session_state.loaded_for_user = user_id
@@ -629,6 +743,8 @@ def render_app_content(user_id, user_email, T):
         )
         T = UI_TEXT[st.session_state.lang]
         st.header(T["settings"])
+
+        render_season_selector()
 
         n_people = st.number_input(T["people"], 1, 10, value=st.session_state.n_people)
         st.session_state.n_people = n_people # Sync
@@ -695,15 +811,15 @@ def render_app_content(user_id, user_email, T):
     render_myths_section(T)
 
 def init_session_state():
-    """Inizializza tutte le variabili di stato necessarie all'avvio"""
     defaults = {
         "lang": "IT",
         "menu_version": 0,
         "swap_idx": None,
         "n_people": 2,
         "piz": True,
-        "loaded_for_user": None, # Per gestire il caricamento dati da DB
-        "meals": []              # Lista pasti vuota inizialmente
+        "loaded_for_user": None,
+        "meals": [],
+        "season": get_current_season()
     }
     
     for key, value in defaults.items():
@@ -742,7 +858,6 @@ def main():
                 
         # Sidebar con Logout e Info Utente
         with st.sidebar:
-            st.sidebar.write(f"Session ID: {id(st.session_state)}") #test
             st.markdown(f"#### {T['title']}")
             st.write(f"👤 **{user_email}**")
             if st.button(T["logout"], type="primary"):
