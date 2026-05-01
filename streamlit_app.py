@@ -69,9 +69,34 @@ UI_TEXT = {
         "auth_title": "🥗 Menù Settimanale", "title": "🥗 Menù Settimanale", "settings": "⚙️ Impostazioni", "people": "Persone a tavola",
         "pizza_toggle": "Includi Pizza Settimanale", "gen": "🔄 GENERA", "save": "💾 SALVA MODIFICHE", "copy": "📋 COPIA MENÙ TESTUALE", "copy_here": "Copia da qui:", "copy_info": "Clicca sull'icona in alto a destra nel riquadro per copiare tutto!",
         "sync": "Sincronizzato!", "pills": "📚 Pillole di Educazione Alimentare",
-        "pills_txt": "- **Pizza:** 1 volta a settimana.\n- **Piatto Unico:** Pasta e fagioli, insalatone.\n- **Regola:** Sempre con verdura extra.",
+        "pills_txt": (
+            "- **Proteine:** Alterna pesce, legumi, uova, carne bianca. Carne rossa max 1 volta/sett.\n"
+            "- **Cereali:** Preferisci sempre la versione integrale (pasta, riso, pane).\n"
+            "- **Legumi:** Almeno 3-4 volte a settimana come proteina principale o contorno.\n"
+            "- **Verdura:** Almeno 2 porzioni al giorno, variando i colori e la stagione.\n"
+            "- **Frutta:** 2-3 porzioni al giorno, intera e di stagione. Evita i succhi.\n"
+            "- **Grassi:** Olio EVO come condimento principale (1-2 cucchiai a pasto).\n"
+            "- **Sale:** Meno di 5g al giorno. Usa erbe aromatiche e spezie.\n"
+            "- **Acqua:** Almeno 1,5-2 litri al giorno. No bevande zuccherate.\n"
+            "- **Pizza:** Max 1 volta a settimana, meglio con impasto integrale.\n"
+            "- **Piatto Unico:** Pasta e fagioli, minestrone, insalatone proteiche.\n"
+            "- **Regola d'oro:** Ogni pasto = proteina + cereale integrale + verdura di stagione."
+        ),
         "guide": "⚖️ Grammature Consigliate",
-        "guide_txt": "* **Cereali:** 80g\n* **Carne:** 120g\n* **Pesce:** 150g\n* **Verdura:** 200g",
+        "guide_txt": (
+            "| Alimento | Porzione | Freq/sett |\n"
+            "|---|---|---|\n"
+            "| Cereali integrali | 80g secchi | Ogni giorno |\n"
+            "| Verdura | 200g | 2+ al giorno |\n"
+            "| Frutta | 150g | 2-3 al giorno |\n"
+            "| Legumi | 150g cotti | 3-4 |\n"
+            "| Pesce | 150g | 3 |\n"
+            "| Carne bianca | 120g | 2 |\n"
+            "| Uova | 2 pz | 2-3 |\n"
+            "| Formaggio | 100g | 1 |\n"
+            "| Carne rossa | 100g | max 1 |\n"
+            "| Olio EVO | 1-2 cucchiai | Ogni giorno |"
+        ),
         "freq": "📊 Frequenze Settimanali", "shop": "🛒 Lista della Spesa",
         "shop_calc": "Calcolata per", "days": ["Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato", "Domenica"],
         "lunch": "Pranzo", "dinner": "Cena", "prot": "Proteina", "carb": "Carboidrato", "veg": "Verdura",
@@ -88,9 +113,34 @@ UI_TEXT = {
         "auth_title": "🥗 Weekly Menu", "title": "🥗 Weekly Menu", "settings": "⚙️ Settings", "people": "People at the table",
         "pizza_toggle": "Include Weekly Pizza", "gen": "🔄 GENERATE", "save": "💾 SAVE CHANGES", "copy": "📋 COPY TEXT MENÙ", "copy_here": "Copy from here:", "copy_info": "💡 Click the icon in the top right of the box to copy everything!",
         "sync": "Synced!", "pills": "📚 Nutritional Pills",
-        "pills_txt": "- **Pizza:** Once a week.\n- **One-Pot Meal:** Pasta & beans, big salads.\n- **Rule:** Always add extra vegetables.",
+        "pills_txt": (
+            "- **Proteins:** Alternate fish, legumes, eggs, white meat. Red meat max once/week.\n"
+            "- **Grains:** Always prefer the wholegrain version (pasta, rice, bread).\n"
+            "- **Legumes:** At least 3-4 times a week as a main protein or side dish.\n"
+            "- **Vegetables:** At least 2 portions a day, varying colours and season.\n"
+            "- **Fruit:** 2-3 portions a day, whole and seasonal. Avoid juices.\n"
+            "- **Fats:** Extra virgin olive oil as the main condiment (1-2 tbsp per meal).\n"
+            "- **Salt:** Less than 5g a day. Use herbs and spices instead.\n"
+            "- **Water:** At least 1.5-2 litres a day. No sugary drinks.\n"
+            "- **Pizza:** Max once a week, preferably with wholemeal dough.\n"
+            "- **One-Pot Meal:** Pasta e fagioli, minestrone, protein salads.\n"
+            "- **Golden rule:** Every meal = protein + wholegrain + seasonal vegetable."
+        ),
         "guide": "⚖️ Portion Guidelines",
-        "guide_txt": "* **Cereals:** 80g\n* **Meat:** 120g\n* **Fish:** 150g\n* **Vegetables:** 200g",
+        "guide_txt": (
+            "| Food | Portion | Freq/week |\n"
+            "|---|---|---|\n"
+            "| Whole grains | 80g dry | Every day |\n"
+            "| Vegetables | 200g | 2+ per day |\n"
+            "| Fruit | 150g | 2-3 per day |\n"
+            "| Legumes | 150g cooked | 3-4 |\n"
+            "| Fish | 150g | 3 |\n"
+            "| White meat | 120g | 2 |\n"
+            "| Eggs | 2 pcs | 2-3 |\n"
+            "| Cheese | 100g | 1 |\n"
+            "| Red meat | 100g | max 1 |\n"
+            "| EVO oil | 1-2 tbsp | Every day |"
+        ),
         "freq": "📊 Weekly Frequencies", "shop": "🛒 Shopping List",
         "shop_calc": "Calculated for", "days": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
         "lunch": "Lunch", "dinner": "Dinner", "prot": "Protein", "carb": "Carbohydrate", "veg": "Vegetables",
