@@ -733,8 +733,6 @@ def render_meal_card(idx, col_idx, T):
 
         if new_p in ["Pizza", "One-Pot Meal"]:
             new_c = "Included"
-            if new_p == "Pizza": 
-                st.warning(T["pizza_tip"])
             if new_p == "One-Pot Meal":
                 missing = get_missing_protein_hint(idx, T)
                 if missing:
