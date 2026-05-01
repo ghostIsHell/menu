@@ -459,8 +459,8 @@ def legume_side_label(key, lang):
     season = st.session_state.get("season", get_current_season())
     info = DATA["LEGUMES_SIDE"][key]
     label = info[lang]
-    if season not in info["seasons"]:
-        label = f"⚠️ {label}"
+    #if season not in info["seasons"]:
+    #    label = f"⚠️ {label}"
     return label
 
 def update_meal(idx):
@@ -589,23 +589,28 @@ def render_meal_card(idx, col_idx, T):
             args=(idx,)
         )
 
-        # Legume side dish (optional)
-        leg_side_options = ["None"] + list(DATA["LEGUMES_SIDE"].keys())
-        current_leg = m.get("legume_side") or "None"
-        if current_leg not in leg_side_options:
-            current_leg = "None"
+        # ✅ Only show legume side if protein is NOT already Legumes
+        if new_p != "Legumes":
+            # Legume side dish (optional)
+            leg_side_options = ["None"] + list(DATA["LEGUMES_SIDE"].keys())
+            current_leg = m.get("legume_side") or "None"
+            if current_leg not in leg_side_options:
+                current_leg = "None"
 
-        new_leg = st.selectbox(
-            "🫘 " + ("Legume (contorno)" if st.session_state.lang == "IT" else "Legume (side)"),
-            options=leg_side_options,
-            index=leg_side_options.index(current_leg),
-            format_func=lambda x: "—" if x == "None" else legume_side_label(x, st.session_state.lang),
-            key=f"leg{idx}_{v_key}",
-            on_change=update_meal,
-            args=(idx,)
-        )
-        # Store it back (update_meal handles prot/carbo/veg, add legume_side here)
-        st.session_state.meals[idx]["legume_side"] = None if new_leg == "None" else new_leg
+            new_leg = st.selectbox(
+                "🫘 " + ("Legume (contorno)" if st.session_state.lang == "IT" else "Legume (side)"),
+                options=leg_side_options,
+                index=leg_side_options.index(current_leg),
+                format_func=lambda x: "—" if x == "None" else legume_side_label(x, st.session_state.lang),
+                key=f"leg{idx}_{v_key}",
+                on_change=update_meal,
+                args=(idx,)
+            )
+            # Store it back (update_meal handles prot/carbo/veg, add legume_side here)
+            st.session_state.meals[idx]["legume_side"] = None if new_leg == "None" else new_leg
+        else:
+            # Clear any previously set legume side if protein switched to Legumes
+            st.session_state.meals[idx]["legume_side"] = None
 
         # --- GRAMMI DINAMICI ---
         with st.expander(T["sugg"]):
