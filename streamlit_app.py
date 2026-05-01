@@ -805,7 +805,7 @@ def render_myths_section(T):
     with st.popover(T["know_it"]):
         tab_myths, tab_cur = st.tabs([
             T["myths"],
-            T["curiosities"]
+            T["curiosity"]
         ])
 
         with tab_myths:
