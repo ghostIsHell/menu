@@ -81,7 +81,7 @@ UI_TEXT = {
         "succes_reg": "Registrazione completata! Ora puoi accedere.", "welcomeback": "Bentornato. Accesso Eseguito!", "pwd_req": "Password (min. 6 caratteri)", "acc_create": "Crea Account", "logout":"Esci",
         "clear": "Pulisci Lista Spesa", "myths": "Sfatiamo alcuni miti", "general_source": "Fonte: Linee guida per una sana alimentazione (CREA)",
         "fish_tip_1": "⚠️ Se usi tonno/salmone sott'olio: 50g sgocciolato a testa (max 1 volta/sett).", "fish_tip_2": "🐟 Alterna pesci grassi (salmone) a pesci magri (orata).",
-        "title_myths": "##### 🍬 Miti", "title_learn": "C'è sempre qualcosa di nuovo da imparare..."
+        "myths": "🍬 Miti", "curiosity": "🔬 Curiosità", "title_learn": "C'è sempre qualcosa di nuovo da imparare...", "know_it": "💡 Lo sapevi che?"
     
     },
     "EN": {
@@ -100,59 +100,151 @@ UI_TEXT = {
         "succes_reg": "Registration complete! You can now log in.", "welcomeback": "Welcome Back. You're logged in!", "pwd_req": "Password (min. 6 char)", "acc_create": "Create Account", "logout":"Logout",
         "clear": "Clear Shopping List", "myths": "Let's dispel some myths", "general_source": "Source: Guidelines for a healthy diet (CREA)",
         "fish_tip_1": "⚠️ If using tuna/salmon in oil: 50g drained per person (max 1 time/week).", "fish_tip_2": "🐟 Alternate fatty fish (salmon) with lean fish (sea bream).",
-        "title_myths": "##### 🍬 Miths", "title_learn": "There's always something new to learn..."
+        "myths": "🍬 Miths", "curiosities": "🔬 Curiosità", "title_learn": "There's always something new to learn...", "know_it": "💡 Did you know?"
     }
 }
 
+# --- CREA 2018 BASED CONTENT ---
+
 TIPS = {
     "IT": [
-        "Scegli porzioni adeguate di tutti i gruppi alimentari, alternandoli nei vari pasti.",
-        "Evita digiuni prolungati: uno spuntino leggero (come un frutto) mantiene alta l'attenzione.",
-        "Non mangiare davanti al computer! Fare una pausa vera aiuta a controllare il peso e avere più coscienza di ciò che mangi.",
-        "Aumenta la varietà di alimenti vegetali: prova a consumare più tipi di verdura e frutta nello stesso pasto.",
-        "Riduci il consumo di carne e privilegia altre fonti proteiche.",
-        "Fai sempre un'adeguata prima colazione ogni giorno.",
-        "Diversifica le scelte alimentari: variare i cibi riduce il rischio di assumere ripetutamente sostanze indesiderate.",
-        "L'olio extravergine d'oliva è il miglior grasso, ma attenzione alle quantità!",
-        "La cottura in forno non è sempre la più sana: occhio all'olio nella teglia e alle alte temperature.",
-        "Uova e colesterolo: non vanno evitate, basta non eccedere e limitare salumi e formaggi.",
-        "Il tonno sott'olio va limitato a circa 1 volta a settimana (porzione 50g sgocciolato)."
+        # Direttiva 1 - Peso e attività fisica
+        "Mantieni un peso corporeo nella norma: il sovrappeso aumenta il rischio di malattie cardiovascolari, diabete e alcuni tumori. (CREA 2018)",
+        "Svolgi almeno 30 minuti di attività fisica moderata ogni giorno: anche una camminata veloce conta! (CREA 2018)",
+        "Non saltare i pasti: aiuta a controllare la fame e riduce il rischio di abbuffate. (CREA 2018)",
+        # Direttiva 2 - Frutta e verdura
+        "Consuma almeno 5 porzioni al giorno tra frutta e verdura, variando i colori: ogni colore corrisponde a nutrienti diversi. (CREA 2018)",
+        "Preferisci frutta e verdura di stagione: sono più nutrienti, più saporite e costano meno. (CREA 2018)",
+        "Mangia la frutta intera piuttosto che come succo: mantieni le fibre e senti più sazietà. (CREA 2018)",
+        # Direttiva 3 - Cereali integrali e legumi
+        "Sostituisci i cereali raffinati con quelli integrali: pasta, riso e pane integrali apportano più fibre e saziano meglio. (CREA 2018)",
+        "Consuma legumi almeno 3-4 volte a settimana: sono un'ottima fonte proteica, economica e sostenibile. (CREA 2018)",
+        "I legumi possono sostituire la carne come fonte proteica in un pasto principale: prova pasta e fagioli o zuppa di lenticchie. (CREA 2018)",
+        # Direttiva 4 - Acqua
+        "Bevi almeno 1,5-2 litri di acqua al giorno, preferibilmente lontano dai pasti. Non aspettare di avere sete! (CREA 2018)",
+        "L'acqua è la bevanda ideale: non apporta calorie e idrata in modo ottimale. Evita le bevande zuccherate. (CREA 2018)",
+        # Direttiva 5 - Grassi
+        "Usa l'olio extravergine d'oliva come condimento principale: è ricco di acidi grassi monoinsaturi protettivi, ma attento alle quantità (1-2 cucchiai a pasto). (CREA 2018)",
+        "Limita i grassi saturi (burro, lardo, carni grasse): aumentano il colesterolo LDL e il rischio cardiovascolare. (CREA 2018)",
+        "Il pesce azzurro (sgombro, sardine, alici) è ricco di omega-3: consumalo almeno 2-3 volte a settimana. (CREA 2018)",
+        # Direttiva 6 - Zuccheri
+        "Gli zuccheri aggiunti non dovrebbero superare il 10-15% delle calorie giornaliere totali. Leggi le etichette! (CREA 2018)",
+        "Riduci le bevande zuccherate: una lattina di cola contiene circa 35g di zucchero, quasi tutta la quota giornaliera. (CREA 2018)",
+        # Direttiva 7 - Sale
+        "Riduci il sale a meno di 5g al giorno: usa erbe aromatiche, limone e spezie per insaporire. (CREA 2018)",
+        "Fai attenzione al sale 'nascosto' negli alimenti processati: salumi, formaggi stagionati, pane, snack. (CREA 2018)",
+        # Direttiva 8 - Alcol
+        "Se consumi alcol, non superare 1 unità alcolica al giorno per le donne, 2 per gli uomini. L'ideale sarebbe zero. (CREA 2018)",
+        "L'alcol è calorico e privo di nutrienti: 1g apporta 7 kcal, quasi quanto i grassi. (CREA 2018)",
+        # Direttiva 9 - Varietà
+        "Varia il più possibile la tua alimentazione: nessun alimento da solo contiene tutti i nutrienti necessari. (CREA 2018)",
+        "Non esistono alimenti 'miracolosi' né 'superfood': la chiave è la varietà e l'equilibrio nel tempo. (CREA 2018)",
+        # Direttiva 13 - Sostenibilità
+        "Una dieta ricca di legumi, verdure e cereali integrali fa bene a te e all'ambiente: riduce le emissioni di CO2. (CREA 2018)",
+        "Riduci gli sprechi alimentari: pianifica i pasti, fai una lista della spesa e conserva correttamente gli alimenti. (CREA 2018)",
     ],
     "EN": [
-        "Choose appropriate portions from all food groups, alternating them across meals.",
-        "Avoid prolonged fasting: a light snack (such as a piece of fruit) helps maintain attention.",
-        "Don’t eat in front of the computer! Taking a real break helps control weight and be more aware of what you eat.",
-        "Increase the variety of plant-based foods: try to include more types of vegetables and fruits in the same meal.",
-        "Reduce meat consumption and prioritize other protein sources.",
-        "Always have an adequate breakfast every day.",
-        "Diversify your food choices: varying foods reduces the risk of repeatedly consuming unwanted substances.",
-        "Extra virgin olive oil is the best fat, but watch the quantities!",
-        "Oven cooking is not always the healthiest: be mindful of the oil in the tray and high temperatures.",
-        "Eggs and cholesterol: they don’t need to be avoided, just don’t overdo it and limit processed meats and cheeses.",
-        "Tuna in oil should be limited to about once a week (portion: 50g drained)."
+        "Maintain a normal body weight: overweight increases the risk of cardiovascular disease, diabetes and some cancers. (CREA 2018)",
+        "Get at least 30 minutes of moderate physical activity every day: even a brisk walk counts! (CREA 2018)",
+        "Don't skip meals: it helps control hunger and reduces the risk of overeating. (CREA 2018)",
+        "Eat at least 5 portions of fruit and vegetables a day, varying the colours: each colour provides different nutrients. (CREA 2018)",
+        "Prefer seasonal fruit and vegetables: they are more nutritious, tastier and cheaper. (CREA 2018)",
+        "Eat whole fruit rather than juice: you keep the fibre and feel fuller for longer. (CREA 2018)",
+        "Replace refined grains with whole grains: wholemeal pasta, rice and bread provide more fibre and are more satiating. (CREA 2018)",
+        "Eat legumes at least 3-4 times a week: they are an excellent, affordable and sustainable protein source. (CREA 2018)",
+        "Legumes can replace meat as a protein source in a main meal: try pasta e fagioli or lentil soup. (CREA 2018)",
+        "Drink at least 1.5-2 litres of water a day, preferably between meals. Don't wait until you're thirsty! (CREA 2018)",
+        "Water is the ideal drink: it has no calories and hydrates optimally. Avoid sugary drinks. (CREA 2018)",
+        "Use extra virgin olive oil as your main condiment: it is rich in protective monounsaturated fatty acids, but watch the quantities (1-2 tablespoons per meal). (CREA 2018)",
+        "Limit saturated fats (butter, lard, fatty meats): they raise LDL cholesterol and cardiovascular risk. (CREA 2018)",
+        "Oily fish (mackerel, sardines, anchovies) is rich in omega-3: eat it at least 2-3 times a week. (CREA 2018)",
+        "Added sugars should not exceed 10-15% of total daily calories. Read labels! (CREA 2018)",
+        "Cut back on sugary drinks: a can of cola contains about 35g of sugar, almost the entire daily allowance. (CREA 2018)",
+        "Reduce salt to less than 5g a day: use herbs, lemon and spices for flavour instead. (CREA 2018)",
+        "Watch out for 'hidden' salt in processed foods: cured meats, aged cheeses, bread, snacks. (CREA 2018)",
+        "If you drink alcohol, don't exceed 1 unit per day for women, 2 for men. Zero is ideal. (CREA 2018)",
+        "Alcohol is calorie-dense and nutrient-free: 1g provides 7 kcal, almost as much as fat. (CREA 2018)",
+        "Vary your diet as much as possible: no single food contains all the nutrients you need. (CREA 2018)",
+        "There are no 'miracle' foods or 'superfoods': the key is variety and balance over time. (CREA 2018)",
+        "A diet rich in legumes, vegetables and whole grains is good for you and the planet: it reduces CO2 emissions. (CREA 2018)",
+        "Reduce food waste: plan your meals, make a shopping list and store food correctly. (CREA 2018)",
     ]
 }
 
 MYTHS_AND_CUR = {
     "IT": [
-        {"titolo": "Zucchero di canna vs Bianco", "testo": "Non è vero che lo zucchero grezzo sia più nutriente. La differenza di colore dipende solo da residui vegetali (melassa) senza vantaggi nutrizionali: sono la stessa cosa."},
-        {"titolo": "Zucchero e Iperattività", "testo": "Studi approfonditi hanno smentito che il saccarosio provochi alterazioni del comportamento o iperattività nei bambini."},
-        {"titolo": "Succhi 'Senza Zuccheri Aggiunti'", "testo": "Contengono comunque gli zuccheri naturali della frutta (8-10%). Un bicchiere fornisce circa 70kcal: sono zuccheri liberi da controllare."},
-        {"titolo": "Il Miele è dietetico?", "testo": "No. Pur avendo meno calorie per 100g rispetto allo zucchero (304 vs 392) a causa dell'acqua, rimane una fonte di zuccheri aggiunti da consumare con moderazione."},
-        {"titolo": "Miele e Neonati ⚠️", "testo": "Sotto i 12 mesi il miele è sconsigliato: può contenere spore di botulino che il sistema dei neonati non riesce a contrastare. Pericoloso anche se pastorizzato."},
-        {"titolo": "Prodotti Light", "testo": "Non sono una scusa per mangiarne di più. Spesso inducono un falso senso di sicurezza, ma possono avere molte calorie. Leggi sempre l'etichetta."},
-        {"titolo": "Lo Zucchero è un veleno?", "testo": "Non esistono alimenti buoni o cattivi in assoluto. È la quantità totale nella dieta a fare la differenza. I residui di lavorazione (calce, anidride solforosa) sono presenti in tracce innocue."},
-        {"titolo": "Dipendenza da Zucchero", "testo": "Non esiste una vera dipendenza fisica. È un comportamento compulsivo che può essere corretto con una buona educazione alimentare."}
+        # Grassi
+        {"titolo": "🧈 Il burro fa meno male dell'olio", "testo": "Falso. Il burro è ricco di grassi saturi che aumentano il colesterolo LDL. L'olio EVO, ricco di grassi monoinsaturi, è molto più protettivo per il cuore. (CREA 2018 - Direttiva 5)"},
+        {"titolo": "🥑 I grassi fanno ingrassare", "testo": "Non tutti i grassi sono uguali. I grassi insaturi (olio d'oliva, frutta secca, pesce) sono essenziali e protettivi. Fa ingrassare l'eccesso calorico totale, non un singolo nutriente. (CREA 2018 - Direttiva 5)"},
+        {"titolo": "🐟 Il pesce sott'olio non vale come il fresco", "testo": "Il tonno e il salmone in scatola mantengono buone proprietà nutrizionali. Preferisci quelli al naturale e limita a 1 volta/settimana quelli sott'olio (50g sgocciolati). (CREA 2018 - Direttiva 5)"},
+        # Zuccheri
+        {"titolo": "🍯 Il miele è più sano dello zucchero", "testo": "Pur avendo qualche micronutriente in più, il miele è comunque uno zucchero aggiunto da consumare con moderazione. La differenza calorica è minima. (CREA 2018 - Direttiva 6)"},
+        {"titolo": "🧃 I succhi di frutta sono sani come la frutta", "testo": "Falso. I succhi perdono le fibre, saziano meno e contengono comunque zuccheri liberi (8-10%). Un bicchiere = circa 70 kcal di zuccheri. Meglio mangiare la frutta intera. (CREA 2018 - Direttiva 6)"},
+        {"titolo": "🍬 Lo zucchero di canna fa meno male", "testo": "La differenza nutrizionale è trascurabile. Il colore scuro dipende solo dalla melassa residua. Entrambi sono zuccheri aggiunti da limitare. (CREA 2018 - Direttiva 6)"},
+        {"titolo": "🍭 Lo zucchero rende iperattivi i bambini", "testo": "Studi scientifici approfonditi hanno smentito questa credenza. Non esiste una relazione causale tra saccarosio e iperattività nei bambini. (CREA 2018 - Direttiva 6)"},
+        # Sale
+        {"titolo": "🧂 Il sale rosa dell'Himalaya è più sano", "testo": "Contiene le stesse quantità di sodio del comune sale da cucina. Le tracce di minerali aggiuntivi sono irrilevanti ai fini nutrizionali. Va limitato esattamente come il sale normale. (CREA 2018 - Direttiva 7)"},
+        {"titolo": "🧂 Cucinare senza sale rende il cibo insapore", "testo": "Il palato si adatta in poche settimane. Erbe aromatiche, spezie, aglio, limone e aceto permettono di ottenere piatti saporiti e salutari. (CREA 2018 - Direttiva 7)"},
+        # Proteine
+        {"titolo": "🥩 Bisogna mangiare carne tutti i giorni per avere proteine", "testo": "Falso. Legumi, uova, pesce, latticini e anche cereali integrali contribuiscono al fabbisogno proteico. La dieta mediterranea prevede carne poche volte a settimana. (CREA 2018 - Direttiva 3)"},
+        {"titolo": "🫘 I legumi fanno gonfiare e sono difficili da digerire", "testo": "Ammollo prolungato, cottura adeguata e l'aggiunta di erbe (alloro, rosmarino) riducono significativamente il gonfiore. Chi li consuma regolarmente li tollera meglio. (CREA 2018 - Direttiva 3)"},
+        {"titolo": "🥚 Le uova fanno aumentare il colesterolo", "testo": "Le evidenze scientifiche attuali mostrano che un consumo moderato di uova (fino a 4 a settimana) non è problematico per la maggior parte delle persone sane. (CREA 2018 - Direttiva 9)"},
+        # Cereali
+        {"titolo": "🍞 Il pane fa ingrassare", "testo": "Il pane, specie se integrale, è una fonte importante di carboidrati complessi, fibre e vitamine del gruppo B. Fa ingrassare l'eccesso calorico totale, non il pane in sé. (CREA 2018 - Direttiva 3)"},
+        {"titolo": "🌾 Il glutine fa male a tutti", "testo": "Il glutine è problematico solo per celiaci (circa 1% della popolazione) e per chi ha sensibilità accertata. Per tutti gli altri, i cereali integrali contenenti glutine sono alimenti sani e consigliati. (CREA 2018 - Direttiva 3)"},
+        # Diete e integratori
+        {"titolo": "💊 Gli integratori sostituiscono una dieta sana", "testo": "Gli integratori possono essere utili in caso di carenze accertate, ma non sostituiscono mai una dieta varia ed equilibrata. La matrice alimentare è irriducibile a una pillola. (CREA 2018 - Direttiva 11)"},
+        {"titolo": "🥗 Le diete drastiche funzionano meglio", "testo": "Le diete drastiche causano perdita di massa muscolare, effetto yo-yo e carenze nutrizionali. Un calo di 0,5-1 kg a settimana è fisiologico e mantenibile. (CREA 2018 - Direttiva 11)"},
+        {"titolo": "🌟 Esistono i 'superfood'", "testo": "Nessun alimento singolo può supplire a una dieta sbilanciata. Il concetto di 'superfood' è prevalentemente di marketing. La varietà è l'unico vero 'super' approccio. (CREA 2018 - Direttiva 11)"},
+        # Sostenibilità
+        {"titolo": "🌍 Mangiare sano costa troppo", "testo": "Una dieta mediterranea basata su legumi, cereali integrali, frutta e verdura di stagione è tra le diete più economiche. La carne è spesso la voce di spesa più alta. (CREA 2018 - Direttiva 13)"},
     ],
     "EN": [
-        {"titolo": "Brown Sugar vs White Sugar", "testo": "It is not true that raw sugar is more nutritious. The difference in color is only due to plant residues (molasses) with no nutritional advantages: they are essentially the same."},
-        {"titolo": "Sugar and Hyperactivity", "testo": "Extensive studies have debunked the idea that sucrose causes behavioral changes or hyperactivity in children."},
-        {"titolo": "'No Added Sugar' Juices", "testo": "They still contain the natural sugars of fruit (8–10%). A glass provides about 70 kcal: these are free sugars that should be monitored."},
-        {"titolo": "Is Honey Diet-Friendly?", "testo": "No. Although it has fewer calories per 100g than sugar (304 vs 392) due to its water content, it remains a source of added sugars to be consumed in moderation."},
-        {"titolo": "Honey and Infants ⚠️", "testo": "Under 12 months, honey is not recommended: it may contain botulinum spores that infants’ systems cannot fight. Dangerous even if pasteurized."},
-        {"titolo": "Light Products", "testo": "They are not an excuse to eat more. They often create a false sense of security but can still be high in calories. Always read the label."},
-        {"titolo": "Is Sugar a Poison?", "testo": "There are no foods that are absolutely good or bad. It is the total amount in the diet that makes the difference. Processing residues (lime, sulfur dioxide) are present only in harmless traces."},
-        {"titolo": "Sugar Addiction", "testo": "There is no true physical addiction. It is a compulsive behavior that can be corrected with proper nutritional education."}
+        {"titolo": "🧈 Butter is healthier than oil", "testo": "False. Butter is rich in saturated fats that raise LDL cholesterol. Extra virgin olive oil, rich in monounsaturated fats, is much more protective for the heart. (CREA 2018 - Directive 5)"},
+        {"titolo": "🥑 Fat makes you fat", "testo": "Not all fats are equal. Unsaturated fats (olive oil, nuts, fish) are essential and protective. What causes weight gain is a total calorie surplus, not a single nutrient. (CREA 2018 - Directive 5)"},
+        {"titolo": "🐟 Canned fish is not as good as fresh", "testo": "Canned tuna and salmon retain good nutritional properties. Prefer those in water, and limit oil-packed versions to once a week (50g drained). (CREA 2018 - Directive 5)"},
+        {"titolo": "🍯 Honey is healthier than sugar", "testo": "Although it has slightly more micronutrients, honey is still an added sugar to be consumed in moderation. The calorie difference is minimal. (CREA 2018 - Directive 6)"},
+        {"titolo": "🧃 Fruit juices are as healthy as fruit", "testo": "False. Juices lose fibre, are less filling and still contain free sugars (8-10%). One glass ≈ 70 kcal of sugar. Better to eat whole fruit. (CREA 2018 - Directive 6)"},
+        {"titolo": "🍬 Brown sugar is less harmful", "testo": "The nutritional difference is negligible. The dark colour comes only from residual molasses. Both are added sugars to be limited. (CREA 2018 - Directive 6)"},
+        {"titolo": "🍭 Sugar makes children hyperactive", "testo": "In-depth scientific studies have debunked this belief. There is no causal link between sucrose and hyperactivity in children. (CREA 2018 - Directive 6)"},
+        {"titolo": "🧂 Himalayan pink salt is healthier", "testo": "It contains the same amount of sodium as regular table salt. The additional mineral traces are nutritionally irrelevant. It should be limited just like normal salt. (CREA 2018 - Directive 7)"},
+        {"titolo": "🧂 Cooking without salt makes food tasteless", "testo": "The palate adapts within a few weeks. Herbs, spices, garlic, lemon and vinegar can make food tasty and healthy. (CREA 2018 - Directive 7)"},
+        {"titolo": "🥩 You need to eat meat every day for protein", "testo": "False. Legumes, eggs, fish, dairy and even wholegrains contribute to protein needs. The Mediterranean diet includes meat only a few times a week. (CREA 2018 - Directive 3)"},
+        {"titolo": "🫘 Legumes cause bloating and are hard to digest", "testo": "Prolonged soaking, proper cooking and adding herbs (bay leaf, rosemary) significantly reduce bloating. Those who eat them regularly tolerate them better. (CREA 2018 - Directive 3)"},
+        {"titolo": "🥚 Eggs raise cholesterol", "testo": "Current scientific evidence shows that moderate egg consumption (up to 4 per week) is not problematic for most healthy people. (CREA 2018 - Directive 9)"},
+        {"titolo": "🍞 Bread makes you fat", "testo": "Bread, especially wholemeal, is an important source of complex carbohydrates, fibre and B vitamins. It is total calorie excess that causes weight gain, not bread itself. (CREA 2018 - Directive 3)"},
+        {"titolo": "🌾 Gluten is harmful for everyone", "testo": "Gluten is only problematic for coeliacs (about 1% of the population) and those with confirmed sensitivity. For everyone else, gluten-containing wholegrains are healthy and recommended. (CREA 2018 - Directive 3)"},
+        {"titolo": "💊 Supplements replace a healthy diet", "testo": "Supplements can be useful for confirmed deficiencies, but never replace a varied, balanced diet. The food matrix cannot be reduced to a pill. (CREA 2018 - Directive 11)"},
+        {"titolo": "🥗 Drastic diets work better", "testo": "Drastic diets cause muscle loss, yo-yo effect and nutritional deficiencies. A loss of 0.5-1 kg per week is physiological and sustainable. (CREA 2018 - Directive 11)"},
+        {"titolo": "🌟 Superfoods exist", "testo": "No single food can compensate for an unbalanced diet. The 'superfood' concept is largely marketing. Variety is the only truly 'super' approach. (CREA 2018 - Directive 11)"},
+        {"titolo": "🌍 Eating healthy is too expensive", "testo": "A Mediterranean diet based on legumes, whole grains, seasonal fruit and vegetables is among the most affordable diets. Meat is often the biggest food expense. (CREA 2018 - Directive 13)"},
+    ]
+}
+
+CURIOSITIES = {
+    "IT": [
+        {"titolo": "🫒 Olio EVO e cottura", "testo": "L'olio extravergine d'oliva è più stabile al calore di quanto si creda: il suo punto di fumo (≈180°C) lo rende adatto anche alla cottura. Evita però di surriscaldarlo. (CREA 2018)"},
+        {"titolo": "🫘 Legumi = carne vegetale", "testo": "100g di lenticchie secche contengono circa 25g di proteine, paragonabili a molte fonti animali, con il vantaggio di apportare fibre e zero colesterolo. (CREA 2018)"},
+        {"titolo": "🥦 Cottura e nutrienti", "testo": "Alcune verdure (carote, pomodori) rilasciano più antiossidanti se cotte. Altre (broccoli, peperoni) perdono vitamina C con il calore. Varia metodo e verdure! (CREA 2018)"},
+        {"titolo": "🍅 Il licopene del pomodoro", "testo": "Il licopene, potente antiossidante del pomodoro, è meglio assorbito dal corpo quando il pomodoro è cotto e condito con olio. La salsa di pomodoro è più 'funzionale' del pomodoro crudo! (CREA 2018)"},
+        {"titolo": "🌾 Fibra e microbiota", "testo": "Le fibre dei cereali integrali e dei legumi nutrono il microbiota intestinale (i batteri 'buoni'), che a sua volta protegge dalla infiammazione cronica e rafforza il sistema immunitario. (CREA 2018)"},
+        {"titolo": "🐟 Omega-3 e cervello", "testo": "Gli acidi grassi omega-3 del pesce azzurro sono fondamentali per il funzionamento cerebrale e la prevenzione della depressione. Il DHA è il principale grasso del cervello umano. (CREA 2018)"},
+        {"titolo": "🍊 Vitamina C e ferro", "testo": "Consumare alimenti ricchi di vitamina C (agrumi, peperoni) insieme a fonti di ferro vegetale (legumi, spinaci) ne migliora notevolmente l'assorbimento. (CREA 2018)"},
+        {"titolo": "💧 Acqua e metabolismo", "testo": "Una corretta idratazione migliora il metabolismo, la concentrazione e la performance fisica. Anche una leggera disidratazione (1-2%) riduce le capacità cognitive. (CREA 2018)"},
+        {"titolo": "🧄 Aglio e salute cardiovascolare", "testo": "L'aglio contiene allicina, un composto con proprietà antibatteriche e cardioprotettive. È una delle spezie più studiate per i benefici sulla pressione sanguigna. (CREA 2018)"},
+        {"titolo": "🫐 I polifenoli della frutta", "testo": "I polifenoli di frutti come mirtilli, melograno e uva nera hanno potenti proprietà antiossidanti e antinfiammatorie. La diversità di colori nella frutta è la chiave! (CREA 2018)"},
+    ],
+    "EN": [
+        {"titolo": "🫒 Olive oil and cooking", "testo": "Extra virgin olive oil is more heat-stable than commonly believed: its smoke point (≈180°C) makes it suitable for cooking too. Just avoid overheating it. (CREA 2018)"},
+        {"titolo": "🫘 Legumes = plant-based meat", "testo": "100g of dried lentils contain about 25g of protein, comparable to many animal sources, with the added benefit of fibre and zero cholesterol. (CREA 2018)"},
+        {"titolo": "🥦 Cooking and nutrients", "testo": "Some vegetables (carrots, tomatoes) release more antioxidants when cooked. Others (broccoli, peppers) lose vitamin C with heat. Vary both method and vegetables! (CREA 2018)"},
+        {"titolo": "🍅 Lycopene in tomatoes", "testo": "Lycopene, the powerful antioxidant in tomatoes, is better absorbed by the body when tomatoes are cooked and dressed with oil. Tomato sauce is more 'functional' than raw tomato! (CREA 2018)"},
+        {"titolo": "🌾 Fibre and the microbiome", "testo": "Fibres from wholegrains and legumes feed the gut microbiome (the 'good' bacteria), which in turn protects against chronic inflammation and strengthens the immune system. (CREA 2018)"},
+        {"titolo": "🐟 Omega-3 and the brain", "testo": "The omega-3 fatty acids in oily fish are essential for brain function and depression prevention. DHA is the main fat in the human brain. (CREA 2018)"},
+        {"titolo": "🍊 Vitamin C and iron", "testo": "Eating vitamin C-rich foods (citrus fruits, peppers) alongside plant-based iron sources (legumes, spinach) significantly improves iron absorption. (CREA 2018)"},
+        {"titolo": "💧 Water and metabolism", "testo": "Proper hydration improves metabolism, concentration and physical performance. Even mild dehydration (1-2%) reduces cognitive abilities. (CREA 2018)"},
+        {"titolo": "🧄 Garlic and cardiovascular health", "testo": "Garlic contains allicin, a compound with antibacterial and cardioprotective properties. It is one of the most studied spices for its blood pressure benefits. (CREA 2018)"},
+        {"titolo": "🫐 Polyphenols in fruit", "testo": "Polyphenols in fruits like blueberries, pomegranate and black grapes have powerful antioxidant and anti-inflammatory properties. Colour diversity in fruit is the key! (CREA 2018)"},
     ]
 }
 
@@ -704,25 +796,31 @@ def render_shopping_section(T):
 
 def render_myths_section(T):
     st.divider()
+    lang = st.session_state.lang
 
     st.write("---")
     st.markdown(T["title_myths"])
     st.caption(T["title_learn"])
     # Usiamo un popover per la sezione "nascosta"
-    with st.popover("💡 Lo sapevi che?"):
-        st.subheader(T["myths"])
-        lang = st.session_state.lang
-        
-        # Selezioniamo 2 miti casuali dal database ogni volta che l'app gira
-        # Usiamo min() per sicurezza, nel caso la lista fosse più corta di 2
-        pool_miti = MYTHS_AND_CUR.get(lang, MYTHS_AND_CUR["IT"])
-        random_myths = random.sample(pool_miti, min(2, len(pool_miti)))
-        
-        for myth in random_myths:
-            with st.expander(f"🔍 {myth['titolo']}"):
-                st.write(myth["testo"])
-        
-        st.caption(T["general_source"])
+    with st.popover(T["know_it"]):
+        tab_myths, tab_cur = st.tabs([
+            T["myths"],
+            T["curiosities"]
+        ])
+
+        with tab_myths:
+            st.caption(T["general_source"])
+            pool = MYTHS_AND_CUR.get(lang, MYTHS_AND_CUR["IT"])
+            for myth in random.sample(pool, min(3, len(pool))):
+                with st.expander(myth["titolo"]):
+                    st.write(myth["testo"])
+
+        with tab_cur:
+            st.caption(T["general_source"])
+            pool = CURIOSITIES.get(lang, CURIOSITIES["IT"])
+            for cur in random.sample(pool, min(3, len(pool))):
+                with st.expander(cur["titolo"]):
+                    st.write(cur["testo"])
 
 def render_app_content(user_id, user_email, T):
     # --- CARICAMENTO AUTOMATICO DATI (Solo la prima volta) ---
