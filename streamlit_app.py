@@ -564,7 +564,7 @@ def render_shopping_section(T):
                 # Checkbox
                 st.checkbox(f"**{name}** ({val})", key=f"shop_{cat}_{name}")
 
-def render_myths_selection(T):
+def render_myths_section(T):
     st.divider()
 
     st.write("---")
