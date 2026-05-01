@@ -235,7 +235,11 @@ def signup_user(email, password, T):
 # Funzione per il Logout
 def logout_user():
     conn = get_supabase_client()
-    conn.auth.sign_out()
+    try:
+        conn.auth.sign_out()
+    except:
+        pass
+
     # Rimuovi tutte le chiavi dallo stato della sessione corrente
     for key in list(st.session_state.keys()):
         del st.session_state[key]
@@ -710,22 +714,26 @@ def main():
     st.set_page_config(page_title="Menu", layout="wide", page_icon="🥗")
     init_session_state()
     T = UI_TEXT[st.session_state.lang]
-    
-    # Autenticazione
-    # Controllo Sessione Supabase
-    try:
-        session = conn.auth.get_session()
-    except:
-        session = None
 
-    if not session:
-        # Se non c'è sessione, mostra solo il login
+    # Controlliamo se abbiamo già un utente autenticato NELLO STATO LOCALE
+    if "user" not in st.session_state or st.session_state.user is None:
+        # Se lo stato locale è vuoto, proviamo a vedere se Supabase ha una sessione 
+        # (ma stiamo attenti: qui può avvenire il leak se non gestito)
+        try:
+            session = conn.auth.get_session()
+            if session and session.user:
+                st.session_state.user = session.user
+            else:
+                st.session_state.user = None
+        except:
+            st.session_state.user = None
+    
+    if st.session_state.user is None:
         render_auth_screen()
     else:
-        # Se l'utente è autenticato, mostra l'app
-        user_id = session.user.id
-        user_email = session.user.email
-        
+        user_id = st.session_state.user.id
+        user_email = st.session_state.user.email
+                
         # Sidebar con Logout e Info Utente
         with st.sidebar:
             st.sidebar.write(f"Session ID: {id(st.session_state)}") #test
