@@ -213,6 +213,7 @@ def render_auth_screen():
 
 # Funzione per il Login
 def login_user(email, password):
+    conn = get_supabase_client()
     try:
         res = conn.auth.sign_in_with_password({"email": email, "password": password})
         return res
@@ -222,6 +223,7 @@ def login_user(email, password):
 
 # Funzione per la Registrazione
 def signup_user(email, password, T):
+    conn = get_supabase_client()
     try:
         res = conn.auth.sign_up({"email": email, "password": password})
         st.success(T['succes_reg'])
@@ -240,6 +242,7 @@ def logout_user():
     st.rerun()
     
 def load_user_data(user_id):
+    conn = get_supabase_client()
     try:
         # 1. Carica il profilo
         res_prof = conn.table("profiles").select("*").eq("id", user_id).execute()
@@ -263,6 +266,7 @@ def load_user_data(user_id):
         return None, None
 
 def save_all_data(user_id, user_email, n_people, pizza_on, meals, T):
+    conn = get_supabase_client()
     try:
         # 1. Upsert del profilo (Inserisce o aggiorna se lo username esiste)
         prof_data = {
