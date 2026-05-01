@@ -67,7 +67,10 @@ UI_TEXT = {
         "swap": "↔️ SCAMBIA", "confirm": "✅ CONFERMA", "lock": "Blocca", "pizza_tip": "🍕 Tip: Impasto integrale + contorno di finocchi/insalata.",
         "target_label": "Target", "menu_saved": "✅ Profilo e Menu salvati!", "cancel": "🚫 ANNULLA", "load_btn": "📥 CARICA PROFILO", "saved": "Tutto salvato!",
         "succes_reg": "Registrazione completata! Ora puoi accedere.", "welcomeback": "Bentornato. Accesso Eseguito!", "pwd_req": "Password (min. 6 caratteri)", "acc_create": "Crea Account", "logout":"Esci",
-        "clear": "Pulisci Lista Spesa"
+        "clear": "Pulisci Lista Spesa", "myths": "Sfatiamo alcuni miti", "general_source": "Fonte: Linee guida per una sana alimentazione (CREA)",
+        "fish_tip_1": "⚠️ Se usi tonno/salmone sott'olio: 50g sgocciolato a testa (max 1 volta/sett).", "fish_tip_2": "🐟 Alterna pesci grassi (salmone) a pesci magri (orata).",
+        "title_myths": "##### 🍬 Miti", "title_learn": "C'è sempre qualcosa di nuovo da imparare..."
+    
     },
     "EN": {
         "auth_title": "🥗 Weekly Menu", "title": "🥗 Weekly Menu", "settings": "⚙️ Settings", "people": "People at the table",
@@ -83,8 +86,62 @@ UI_TEXT = {
         "swap": "↔️ SWAP", "confirm": "✅ CONFIRM", "lock": "Lock", "pizza_tip": "🍕 Tip: Whole dough + side of fennel/salad.",
         "target_label": "Target", "menu_saved": "✅ Profile & Menu saved!", "cancel": "🚫 CANCEL", "load_btn": "📥 LOAD PROFILE", "saved": "All saved!",
         "succes_reg": "Registration complete! You can now log in.", "welcomeback": "Welcome Back. You're logged in!", "pwd_req": "Password (min. 6 char)", "acc_create": "Create Account", "logout":"Logout",
-        "clear": "Clear Shopping List"
+        "clear": "Clear Shopping List", "myths": "Let's dispel some myths", "general_source": "Source: Guidelines for a healthy diet (CREA)",
+        "fish_tip_1": "⚠️ If using tuna/salmon in oil: 50g drained per person (max 1 time/week).", "fish_tip_2": "🐟 Alternate fatty fish (salmon) with lean fish (sea bream).",
+        "title_myths": "##### 🍬 Miths", "title_learn": "There's always something new to learn..."
     }
+}
+
+TIPS = {
+    "IT": [
+        "Scegli porzioni adeguate di tutti i gruppi alimentari, alternandoli nei vari pasti.",
+        "Evita digiuni prolungati: uno spuntino leggero (come un frutto) mantiene alta l'attenzione.",
+        "Non mangiare davanti al computer! Fare una pausa vera aiuta a controllare il peso e avere più coscienza di ciò che mangi.",
+        "Aumenta la varietà di alimenti vegetali: prova a consumare più tipi di verdura e frutta nello stesso pasto.",
+        "Riduci il consumo di carne e privilegia altre fonti proteiche.",
+        "Fai sempre un'adeguata prima colazione ogni giorno.",
+        "Diversifica le scelte alimentari: variare i cibi riduce il rischio di assumere ripetutamente sostanze indesiderate.",
+        "L'olio extravergine d'oliva è il miglior grasso, ma attenzione alle quantità!",
+        "La cottura in forno non è sempre la più sana: occhio all'olio nella teglia e alle alte temperature.",
+        "Uova e colesterolo: non vanno evitate, basta non eccedere e limitare salumi e formaggi.",
+        "Il tonno sott'olio va limitato a circa 1 volta a settimana (porzione 50g sgocciolato)."
+    ],
+    "EN": [
+        "Choose appropriate portions from all food groups, alternating them across meals.",
+        "Avoid prolonged fasting: a light snack (such as a piece of fruit) helps maintain attention.",
+        "Don’t eat in front of the computer! Taking a real break helps control weight and be more aware of what you eat.",
+        "Increase the variety of plant-based foods: try to include more types of vegetables and fruits in the same meal.",
+        "Reduce meat consumption and prioritize other protein sources.",
+        "Always have an adequate breakfast every day.",
+        "Diversify your food choices: varying foods reduces the risk of repeatedly consuming unwanted substances.",
+        "Extra virgin olive oil is the best fat, but watch the quantities!",
+        "Oven cooking is not always the healthiest: be mindful of the oil in the tray and high temperatures.",
+        "Eggs and cholesterol: they don’t need to be avoided, just don’t overdo it and limit processed meats and cheeses.",
+        "Tuna in oil should be limited to about once a week (portion: 50g drained)."
+    ]
+}
+
+MYTHS_AND_CUR = {
+    "IT": [
+        {"titolo": "Zucchero di canna vs Bianco", "testo": "Non è vero che lo zucchero grezzo sia più nutriente. La differenza di colore dipende solo da residui vegetali (melassa) senza vantaggi nutrizionali: sono la stessa cosa."},
+        {"titolo": "Zucchero e Iperattività", "testo": "Studi approfonditi hanno smentito che il saccarosio provochi alterazioni del comportamento o iperattività nei bambini."},
+        {"titolo": "Succhi 'Senza Zuccheri Aggiunti'", "testo": "Contengono comunque gli zuccheri naturali della frutta (8-10%). Un bicchiere fornisce circa 70kcal: sono zuccheri liberi da controllare."},
+        {"titolo": "Il Miele è dietetico?", "testo": "No. Pur avendo meno calorie per 100g rispetto allo zucchero (304 vs 392) a causa dell'acqua, rimane una fonte di zuccheri aggiunti da consumare con moderazione."},
+        {"titolo": "Miele e Neonati ⚠️", "testo": "Sotto i 12 mesi il miele è sconsigliato: può contenere spore di botulino che il sistema dei neonati non riesce a contrastare. Pericoloso anche se pastorizzato."},
+        {"titolo": "Prodotti Light", "testo": "Non sono una scusa per mangiarne di più. Spesso inducono un falso senso di sicurezza, ma possono avere molte calorie. Leggi sempre l'etichetta."},
+        {"titolo": "Lo Zucchero è un veleno?", "testo": "Non esistono alimenti buoni o cattivi in assoluto. È la quantità totale nella dieta a fare la differenza. I residui di lavorazione (calce, anidride solforosa) sono presenti in tracce innocue."},
+        {"titolo": "Dipendenza da Zucchero", "testo": "Non esiste una vera dipendenza fisica. È un comportamento compulsivo che può essere corretto con una buona educazione alimentare."}
+    ],
+    "EN": [
+        {"titolo": "Brown Sugar vs White Sugar", "testo": "It is not true that raw sugar is more nutritious. The difference in color is only due to plant residues (molasses) with no nutritional advantages: they are essentially the same."},
+        {"titolo": "Sugar and Hyperactivity", "testo": "Extensive studies have debunked the idea that sucrose causes behavioral changes or hyperactivity in children."},
+        {"titolo": "'No Added Sugar' Juices", "testo": "They still contain the natural sugars of fruit (8–10%). A glass provides about 70 kcal: these are free sugars that should be monitored."},
+        {"titolo": "Is Honey Diet-Friendly?", "testo": "No. Although it has fewer calories per 100g than sugar (304 vs 392) due to its water content, it remains a source of added sugars to be consumed in moderation."},
+        {"titolo": "Honey and Infants ⚠️", "testo": "Under 12 months, honey is not recommended: it may contain botulinum spores that infants’ systems cannot fight. Dangerous even if pasteurized."},
+        {"titolo": "Light Products", "testo": "They are not an excuse to eat more. They often create a false sense of security but can still be high in calories. Always read the label."},
+        {"titolo": "Is Sugar a Poison?", "testo": "There are no foods that are absolutely good or bad. It is the total amount in the diet that makes the difference. Processing residues (lime, sulfur dioxide) are present only in harmless traces."},
+        {"titolo": "Sugar Addiction", "testo": "There is no true physical addiction. It is a compulsive behavior that can be corrected with proper nutritional education."}
+    ]
 }
 
 # --- 2. DATABASE ---
@@ -431,6 +488,11 @@ def render_meal_card(idx, col_idx, T):
             u_p = "pz" if DATA["PROT"][new_p]["unit"] == "pz" else "g"
             st.write(f"**{T['total']} {st.session_state.n_people}:**")
             st.write(f"- {DATA['PROT'][new_p][st.session_state.lang]}: {g_p * st.session_state.n_people} {u_p}")
+
+            if new_p == "Fish":
+                st.caption(T["fish_tip_1"])
+                st.caption(T["fish_tip_2"])
+                
             if g_c > 0: 
                 st.write(f"- {DATA['CARBO'][new_c][st.session_state.lang]}: {g_c * st.session_state.n_people} g")
             st.write(f"- {T['veg']}: {200 * st.session_state.n_people} g")
@@ -502,6 +564,28 @@ def render_shopping_section(T):
                 # Checkbox
                 st.checkbox(f"**{name}** ({val})", key=f"shop_{cat}_{name}")
 
+def render_myths_selection(T):
+    st.divider()
+
+    st.write("---")
+    st.markdown(T["title_myths"])
+    st.caption(T["title_learn"])
+    # Usiamo un popover per la sezione "nascosta"
+    with st.popover("💡 Lo sapevi che?"):
+        st.subheader(T["myths"])
+        lang = st.session_state.lang
+        
+        # Selezioniamo 2 miti casuali dal database ogni volta che l'app gira
+        # Usiamo min() per sicurezza, nel caso la lista fosse più corta di 2
+        pool_miti = MYTHS_AND_CUR.get(lang, MYTHS_AND_CUR["IT"])
+        random_myths = random.sample(pool_miti, min(2, len(pool_miti)))
+        
+        for myth in random_myths:
+            with st.expander(f"🔍 {myth['titolo']}"):
+                st.write(myth["testo"])
+        
+        st.caption(T["general_source"])
+
 def render_app_content(user_id, user_email, T):
     # --- CARICAMENTO AUTOMATICO DATI (Solo la prima volta) ---
     if "loaded_for_user" not in st.session_state or st.session_state.loaded_for_user != user_id:
@@ -554,6 +638,12 @@ def render_app_content(user_id, user_email, T):
             # Mostriamo un'area di testo che l'utente può copiare facilmente
             st.code(menu_string, language="text")
             st.info(T["copy_info"])
+            
+        st.divider()
+        st.subheader("💡 Tip of the day")
+        # Scegliamo un consiglio random basato sulla lingua
+        random_tip = random.choice(TIPS[st.session_state.lang])
+        st.info(random_tip)
         
             
     # Caricamento iniziale pasti
@@ -587,6 +677,9 @@ def render_app_content(user_id, user_email, T):
 
     # --- SHOPPING LIST STILIZZATA ---
     render_shopping_section(T)
+
+    # --- MYTHS and CURIOSITY
+    render_myths_section(T)
 
 def init_session_state():
     """Inizializza tutte le variabili di stato necessarie all'avvio"""
