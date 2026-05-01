@@ -18,7 +18,7 @@ DATA = {
         "Pizza": {"IT": "🍕 Pizza", "EN": "🍕 Pizza", "gr": 1, "unit": "pz", "target": 1},
         "One-Pot Meal": {"IT": "🍲 Piatto Unico", "EN": "🍲 One-Pot Meal", "gr": 150, "unit": "g", "target": 1}
     },
-"CARBO": {
+    "CARBO": {
         "Whole Grain Pasta": {"IT": "🍝 Pasta Integrale", "EN": "🍝 Whole Grain Pasta", "gr": 80},
         "Brown Rice": {"IT": "🍚 Riso Integrale", "EN": "🍚 Brown Rice", "gr": 80},
         "Spelt": {"IT": "🌾 Farro", "EN": "🌾 Spelt", "gr": 80},
@@ -53,7 +53,7 @@ DATA = {
 }
 
 UI_TEXT = {
-"IT": {
+    "IT": {
         "auth_title": "🥗 Menù Settimanale", "title": "🥗 Menù Settimanale", "settings": "⚙️ Impostazioni", "people": "Persone a tavola",
         "pizza_toggle": "Includi Pizza Settimanale", "gen": "🔄 GENERA", "save": "💾 SALVA MODIFICHE", "copy": "📋 COPIA MENÙ TESTUALE", "copy_here": "Copia da qui:", "copy_info": "Clicca sull'icona in alto a destra nel riquadro per copiare tutto!",
         "sync": "Sincronizzato!", "pills": "📚 Pillole di Educazione Alimentare",
@@ -720,6 +720,7 @@ def main():
         
         # Sidebar con Logout e Info Utente
         with st.sidebar:
+            st.sidebar.write(f"Session ID: {id(st.session_state)}") #test
             st.markdown(f"#### {T['title']}")
             st.write(f"👤 **{user_email}**")
             if st.button(T["logout"], type="primary"):
