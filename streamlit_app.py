@@ -144,14 +144,14 @@ MYTHS_AND_CUR = {
     ]
 }
 
-# --- 2. DATABASE ---
-conn = st.connection(
-    "supabase",
-    type=SupabaseConnection,
-    url=st.secrets["connections"]["supabase"]["url"],
-    key=st.secrets["connections"]["supabase"]["key"]
-)
-
+def get_supabase_client():
+    return t.connection(
+        "supabase",
+        type=SupabaseConnection,
+        url=st.secrets["connections"]["supabase"]["url"],
+        key=st.secrets["connections"]["supabase"]["key"]
+    )
+    
 def change_lang():
     # Il valore del widget con chiave "lang_selector" aggiorna direttamente lo stato
     st.session_state.lang = st.session_state.lang_selector
@@ -232,11 +232,13 @@ def signup_user(email, password, T):
 
 # Funzione per il Logout
 def logout_user():
+    conn = get_supabase_client()
     conn.auth.sign_out()
+    # Rimuovi tutte le chiavi dallo stato della sessione corrente
     for key in list(st.session_state.keys()):
         del st.session_state[key]
     st.rerun()
-
+    
 def load_user_data(user_id):
     try:
         # 1. Carica il profilo
@@ -699,6 +701,8 @@ def init_session_state():
 
 # --- 4. APP ---
 def main():
+    conn = get_supabase_client()
+    
     st.set_page_config(page_title="Menu", layout="wide", page_icon="🥗")
     init_session_state()
     T = UI_TEXT[st.session_state.lang]
