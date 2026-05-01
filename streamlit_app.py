@@ -179,13 +179,17 @@ def get_current_season():
 def render_season_selector():
     lang = st.session_state.lang
     season_options = ["winter", "spring", "summer", "autumn"]
+    
+    def _on_season_change():
+        st.session_state.season = st.session_state.season_selector
+        
     st.selectbox(
         "🌍 " + ("Stagione" if lang == "IT" else "Season"),
         options=season_options,
         index=season_options.index(st.session_state.season),
         format_func=lambda x: SEASON_LABELS[lang][x],
         key="season_selector",
-        on_change=lambda: st.session_state.update({"season": st.session_state.season_selector})
+        on_change=_on_season_change
     )
     auto = get_current_season()
     if st.session_state.season != auto:
@@ -196,6 +200,9 @@ def change_lang():
     st.session_state.lang = st.session_state.lang_selector
     st.session_state.menu_version += 1
     st.session_state.swap_idx = None
+    # Re-sync season in case selector drifted
+    if "season_selector" in st.session_state:
+        st.session_state.season = st.session_state.season_selector
 
 def get_menu_text_format(meals, T):
     """Trasforma la lista dei pasti in una stringa leggibile per il copia-incolla"""
