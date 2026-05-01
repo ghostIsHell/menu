@@ -496,6 +496,27 @@ def save_all_data(user_id, user_email, n_people, pizza_on, meals, T):
     except Exception as e:
         st.error(f"Save Error: {e}")
 
+def get_missing_protein_hint(idx, T):
+    """Returns a hint string about which proteins are below target, to show on One-Pot Meal cards."""
+    all_p = [m["prot"] for m in st.session_state.meals]
+    pizza_on = st.session_state.piz
+    
+    missing = []
+    for prot, info in DATA["PROT"].items():
+        if prot in ["Pizza", "One-Pot Meal"]:
+            continue
+        target = info["target"]
+        if prot == "Pizza" and not pizza_on:
+            continue
+        if prot == "Legumes" and not pizza_on:
+            target = 4
+        current = all_p.count(prot)
+        if current < target:
+            label = info[st.session_state.lang]
+            missing.append(f"{label} ({current}/{target})")
+    
+    return missing
+
 # --- 3. LOGICA GENERAZIONE ---
 def generate_menu(pizza_on, current_meals=None):
     season = st.session_state.get("season", get_current_season())
@@ -712,7 +733,13 @@ def render_meal_card(idx, col_idx, T):
 
         if new_p in ["Pizza", "One-Pot Meal"]:
             new_c = "Included"
-            if new_p == "Pizza": st.warning(T["pizza_tip"])
+            if new_p == "Pizza": 
+                st.warning(T["pizza_tip"])
+            if new_p == "One-Pot Meal":
+                missing = get_missing_protein_hint(idx, T)
+                if missing:
+                    hint_label = "💡 Proteine sotto target:" if st.session_state.lang == "IT" else "💡 Proteins below target:"
+                    st.info(hint_label + "\n\n" + "\n\n".join(f"- {m}" for m in missing))
         else:
             c_opts = [ck for ck in DATA["CARBO"].keys() if ck != "Included"]
             c_idx = c_opts.index(m["carbo"]) if m["carbo"] in c_opts else 0
