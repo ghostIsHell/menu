@@ -145,12 +145,12 @@ MYTHS_AND_CUR = {
 }
 
 def get_supabase_client():
-    return st.connection(
-        "supabase",
-        type=SupabaseConnection,
-        url=st.secrets["connections"]["supabase"]["url"],
-        key=st.secrets["connections"]["supabase"]["key"]
-    )
+    if "supabase_client" not in st.session_state:
+        from supabase import create_client
+        url = st.secrets["connections"]["supabase"]["url"]
+        key = st.secrets["connections"]["supabase"]["key"]
+        st.session_state.supabase_client = create_client(url, key)
+    return st.session_state.supabase_client
     
 def change_lang():
     # Il valore del widget con chiave "lang_selector" aggiorna direttamente lo stato
@@ -216,6 +216,11 @@ def login_user(email, password):
     conn = get_supabase_client()
     try:
         res = conn.auth.sign_in_with_password({"email": email, "password": password})
+        if res.session:
+            # Persist the token so we can restore it after a full page refresh
+            st.session_state.user = res.user
+            st.session_state.access_token = res.session.access_token
+            st.session_state.refresh_token = res.session.refresh_token
         return res
     except Exception as e:
         st.error(f"Login Error: {e}")
@@ -239,11 +244,9 @@ def logout_user():
         conn.auth.sign_out()
     except:
         pass
-
-    # Rimuovi tutte le chiavi dallo stato della sessione corrente
     for key in list(st.session_state.keys()):
         del st.session_state[key]
-    st.rerun()
+    st.rerun()  # ← only once, nothing after this runs anyway
     
 def load_user_data(user_id):
     conn = get_supabase_client()
@@ -708,24 +711,27 @@ def init_session_state():
             st.session_state[key] = value
 
 # --- 4. APP ---
-def main():
-    conn = get_supabase_client()
-    
+def main(): 
     st.set_page_config(page_title="Menu", layout="wide", page_icon="🥗")
     init_session_state()
     T = UI_TEXT[st.session_state.lang]
 
-    # Controlliamo se abbiamo già un utente autenticato NELLO STATO LOCALE
     if "user" not in st.session_state or st.session_state.user is None:
-        # Se lo stato locale è vuoto, proviamo a vedere se Supabase ha una sessione 
-        # (ma stiamo attenti: qui può avvenire il leak se non gestito)
-        try:
-            session = conn.auth.get_session()
-            if session and session.user:
-                st.session_state.user = session.user
-            else:
+        if "access_token" in st.session_state:
+            try:
+                conn = get_supabase_client()
+                # Restore the session from stored tokens
+                res = conn.auth.set_session(
+                    st.session_state.access_token,
+                    st.session_state.refresh_token
+                )
+                if res.user:
+                    st.session_state.user = res.user
+                else:
+                    st.session_state.user = None
+            except:
                 st.session_state.user = None
-        except:
+        else:
             st.session_state.user = None
     
     if st.session_state.user is None:
