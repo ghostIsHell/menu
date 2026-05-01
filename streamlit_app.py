@@ -200,9 +200,9 @@ def change_lang():
     st.session_state.lang = st.session_state.lang_selector
     st.session_state.menu_version += 1
     st.session_state.swap_idx = None
-    # Re-sync season in case selector drifted
+    # Force season selectbox to re-render with correct value
     if "season_selector" in st.session_state:
-        st.session_state.season = st.session_state.season_selector
+        del st.session_state["season_selector"]
 
 def get_menu_text_format(meals, T):
     """Trasforma la lista dei pasti in una stringa leggibile per il copia-incolla"""
