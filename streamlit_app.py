@@ -799,7 +799,7 @@ def render_myths_section(T):
     lang = st.session_state.lang
 
     st.write("---")
-    st.markdown(T["title_myths"])
+    st.markdown(T["myths"])
     st.caption(T["title_learn"])
     # Usiamo un popover per la sezione "nascosta"
     with st.popover(T["know_it"]):
