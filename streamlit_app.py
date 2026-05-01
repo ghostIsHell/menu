@@ -100,7 +100,7 @@ UI_TEXT = {
         "succes_reg": "Registration complete! You can now log in.", "welcomeback": "Welcome Back. You're logged in!", "pwd_req": "Password (min. 6 char)", "acc_create": "Create Account", "logout":"Logout",
         "clear": "Clear Shopping List", "myths": "Let's dispel some myths", "general_source": "Source: Guidelines for a healthy diet (CREA)",
         "fish_tip_1": "⚠️ If using tuna/salmon in oil: 50g drained per person (max 1 time/week).", "fish_tip_2": "🐟 Alternate fatty fish (salmon) with lean fish (sea bream).",
-        "myths": "🍬 Miths", "curiosities": "🔬 Curiosità", "title_learn": "There's always something new to learn...", "know_it": "💡 Did you know?"
+        "myths": "🍬 Miths", "curiosity": "🔬 Curiosities", "title_learn": "There's always something new to learn...", "know_it": "💡 Did you know?"
     }
 }
 
