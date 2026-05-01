@@ -184,7 +184,7 @@ def render_season_selector():
 
     current_idx = season_options.index(st.session_state.season)
         
-    st.selectbox(
+    selected_label  = st.selectbox(
         "🌍 " + ("Stagione" if lang == "IT" else "Season"),
         options=translated_options,
         index=current_idx,
