@@ -832,7 +832,7 @@ def render_app_content(user_id, user_email, T):
             # Se la lingua caricata è diversa da quella attuale, aggiornala
             if profile.get('default_lang') != st.session_state.lang:
                 st.session_state.lang = profile['default_lang']
-                 st.session_state.lang_selector = profile['default_lang']
+                st.session_state.lang_selector = profile['default_lang']
             if db_meals:
                 st.session_state.meals = [{
                     "type": m["type"], 
