@@ -145,7 +145,7 @@ MYTHS_AND_CUR = {
 }
 
 def get_supabase_client():
-    return t.connection(
+    return st.connection(
         "supabase",
         type=SupabaseConnection,
         url=st.secrets["connections"]["supabase"]["url"],
