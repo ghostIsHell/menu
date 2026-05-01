@@ -590,7 +590,7 @@ def render_meal_card(idx, col_idx, T):
         )
 
         # ✅ Only show legume side if protein is NOT already Legumes
-        if new_p != "Legumes":
+        if new_p = "Legumes":
             # Legume side dish (optional)
             leg_side_options = ["None"] + list(DATA["LEGUMES_SIDE"].keys())
             current_leg = m.get("legume_side") or "None"
